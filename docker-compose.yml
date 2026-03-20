@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: ozan_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ozan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
+      POSTGRES_DB: ${POSTGRES_DB:-ozanbayir}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ozan"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: ozan_redis
+    command: redis-server --requirepass ${REDIS_PASSWORD:-secret}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: ozan_api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ozan}:${POSTGRES_PASSWORD:-secret}@postgres:5432/${POSTGRES_DB:-ozanbayir}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
+      JWT_SECRET: ${JWT_SECRET}
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+      GCP_CREDENTIALS_JSON: ${GCP_CREDENTIALS_JSON}
+    ports:
+      - "3001:3001"
+
+volumes:
+  postgres_data:
+  redis_data:
