@@ -20,7 +20,15 @@ import { PlayerModule } from "./player/player.module.js";
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: [
+        ".env.local",
+        ".env",
+        "../../.env.local",
+        "../../.env",
+      ],
+    }),
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
