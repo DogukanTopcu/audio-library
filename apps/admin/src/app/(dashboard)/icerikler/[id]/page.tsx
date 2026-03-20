@@ -1,0 +1,590 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import api from "@/lib/api";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import {
+  Loader2,
+  ArrowLeft,
+  Save,
+  Plus,
+  ChevronRight,
+  ChevronDown,
+  AudioLines,
+  FolderOpen,
+  X,
+} from "lucide-react";
+
+const contentSchema = z.object({
+  title: z.string().min(1, "Başlık gereklidir"),
+  type: z.string().min(1, "Tür seçiniz"),
+  description: z.string().optional(),
+  author: z.string().optional(),
+  publisher: z.string().optional(),
+});
+
+type ContentForm = z.infer<typeof contentSchema>;
+
+interface ContentData {
+  id: string;
+  title: string;
+  type: string;
+  description?: string;
+  author?: string;
+  publisher?: string;
+  coverImageUrl?: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+interface Chapter {
+  id: string;
+  title: string;
+  parentId: string | null;
+  order: number;
+  children?: Chapter[];
+  _count?: {
+    children: number;
+    audioRecords: number;
+  };
+}
+
+interface AudioRecord {
+  id: string;
+  title: string;
+  type: string;
+  duration?: number;
+  fileUrl?: string;
+}
+
+export default function ContentDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const id = params.id as string;
+
+  const [content, setContent] = useState<ContentData | null>(null);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set());
+  const [chapterAudios, setChapterAudios] = useState<Record<string, AudioRecord[]>>({});
+  const [loadingAudios, setLoadingAudios] = useState<Set<string>>(new Set());
+
+  // New chapter form
+  const [showNewChapter, setShowNewChapter] = useState(false);
+  const [newChapterTitle, setNewChapterTitle] = useState("");
+  const [newChapterParentId, setNewChapterParentId] = useState<string | null>(null);
+  const [creatingChapter, setCreatingChapter] = useState(false);
+
+  // Audio modal
+  const [audioModal, setAudioModal] = useState<{ chapterId: string } | null>(null);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioTitle, setAudioTitle] = useState("");
+  const [audioType, setAudioType] = useState("RECORDING");
+  const [uploadingAudio, setUploadingAudio] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ContentForm>({
+    resolver: zodResolver(contentSchema),
+  });
+
+  const fetchContent = useCallback(async () => {
+    try {
+      const res = await api.get(`/admin/content/${id}`);
+      const data = res.data.data || res.data;
+      setContent(data);
+      reset({
+        title: data.title,
+        type: data.type,
+        description: data.description || "",
+        author: data.author || "",
+        publisher: data.publisher || "",
+      });
+    } catch {
+      toast.error("İçerik yüklenemedi");
+    }
+  }, [id, reset]);
+
+  const fetchChapters = useCallback(async () => {
+    try {
+      const res = await api.get(`/admin/chapters`, { params: { contentId: id } });
+      const data = res.data.data || res.data;
+      setChapters(Array.isArray(data) ? data : data.items || []);
+    } catch {
+      toast.error("Bölümler yüklenemedi");
+    }
+  }, [id]);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      await Promise.all([fetchContent(), fetchChapters()]);
+      setLoading(false);
+    };
+    load();
+  }, [fetchContent, fetchChapters]);
+
+  const onSubmit = async (data: ContentForm) => {
+    setSaving(true);
+    try {
+      await api.patch(`/admin/content/${id}`, data);
+      toast.success("İçerik güncellendi");
+      fetchContent();
+    } catch {
+      toast.error("Güncelleme başarısız");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggleChapter = async (chapterId: string) => {
+    const newExpanded = new Set(expandedChapters);
+    if (newExpanded.has(chapterId)) {
+      newExpanded.delete(chapterId);
+    } else {
+      newExpanded.add(chapterId);
+      // Load audios if not loaded
+      if (!chapterAudios[chapterId]) {
+        setLoadingAudios((prev) => new Set(prev).add(chapterId));
+        try {
+          const res = await api.get(`/admin/audio-records`, { params: { chapterId } });
+          const data = res.data.data || res.data;
+          setChapterAudios((prev) => ({
+            ...prev,
+            [chapterId]: Array.isArray(data) ? data : data.items || [],
+          }));
+        } catch {
+          toast.error("Ses kayıtları yüklenemedi");
+        } finally {
+          setLoadingAudios((prev) => {
+            const s = new Set(prev);
+            s.delete(chapterId);
+            return s;
+          });
+        }
+      }
+    }
+    setExpandedChapters(newExpanded);
+  };
+
+  const handleCreateChapter = async () => {
+    if (!newChapterTitle.trim()) return;
+    setCreatingChapter(true);
+    try {
+      await api.post("/admin/chapters", {
+        title: newChapterTitle,
+        contentId: id,
+        parentId: newChapterParentId,
+      });
+      toast.success("Bölüm oluşturuldu");
+      setNewChapterTitle("");
+      setNewChapterParentId(null);
+      setShowNewChapter(false);
+      fetchChapters();
+    } catch {
+      toast.error("Bölüm oluşturulamadı");
+    } finally {
+      setCreatingChapter(false);
+    }
+  };
+
+  const handleUploadAudio = async () => {
+    if (!audioModal || !audioFile || !audioTitle.trim()) return;
+    setUploadingAudio(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", audioFile);
+      formData.append("title", audioTitle);
+      formData.append("type", audioType);
+      formData.append("chapterId", audioModal.chapterId);
+
+      await api.post("/admin/audio-records", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      toast.success("Ses kaydı eklendi");
+
+      // Refresh audios for this chapter
+      const res = await api.get(`/admin/audio-records`, {
+        params: { chapterId: audioModal.chapterId },
+      });
+      const data = res.data.data || res.data;
+      setChapterAudios((prev) => ({
+        ...prev,
+        [audioModal.chapterId]: Array.isArray(data) ? data : data.items || [],
+      }));
+
+      setAudioModal(null);
+      setAudioFile(null);
+      setAudioTitle("");
+      setAudioType("RECORDING");
+    } catch {
+      toast.error("Ses kaydı yüklenemedi");
+    } finally {
+      setUploadingAudio(false);
+    }
+  };
+
+  const buildTree = (items: Chapter[], parentId: string | null = null): Chapter[] => {
+    return items
+      .filter((c) => c.parentId === parentId)
+      .sort((a, b) => a.order - b.order)
+      .map((c) => ({ ...c, children: buildTree(items, c.id) }));
+  };
+
+  const renderChapterTree = (chapters: Chapter[], depth = 0) => {
+    return chapters.map((chapter) => {
+      const isExpanded = expandedChapters.has(chapter.id);
+      const audios = chapterAudios[chapter.id] || [];
+      const isLoadingAudio = loadingAudios.has(chapter.id);
+      const subCount = chapter._count?.children ?? chapter.children?.length ?? 0;
+      const audioCount = chapter._count?.audioRecords ?? 0;
+
+      return (
+        <div key={chapter.id} style={{ marginLeft: depth * 20 }}>
+          <div className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-[#111] transition-colors group">
+            <button
+              onClick={() => toggleChapter(chapter.id)}
+              className="text-zinc-500 hover:text-white"
+            >
+              {isExpanded ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </button>
+            <FolderOpen className="h-4 w-4 text-zinc-500" />
+            <span className="flex-1 text-sm text-white">{chapter.title}</span>
+            <span className="text-xs text-zinc-600">
+              {subCount > 0 && `${subCount} alt bolum`}
+              {subCount > 0 && audioCount > 0 && " / "}
+              {audioCount > 0 && `${audioCount} ses`}
+            </span>
+            <button
+              onClick={() => {
+                setNewChapterParentId(chapter.id);
+                setShowNewChapter(true);
+              }}
+              className="opacity-0 group-hover:opacity-100 rounded p-1 text-zinc-500 hover:text-white"
+              title="Alt bölüm ekle"
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => setAudioModal({ chapterId: chapter.id })}
+              className="opacity-0 group-hover:opacity-100 rounded p-1 text-zinc-500 hover:text-white"
+              title="Ses kaydı ekle"
+            >
+              <AudioLines className="h-3.5 w-3.5" />
+            </button>
+            <Link
+              href={`/icerikler/${id}/bolumler/${chapter.id}`}
+              className="opacity-0 group-hover:opacity-100 text-xs text-zinc-500 hover:text-white"
+            >
+              Detay
+            </Link>
+          </div>
+
+          {isExpanded && (
+            <div className="ml-2 border-l border-[#222]">
+              {isLoadingAudio ? (
+                <div className="flex items-center gap-2 px-6 py-2">
+                  <Loader2 className="h-3 w-3 animate-spin text-zinc-500" />
+                  <span className="text-xs text-zinc-500">Yükleniyor...</span>
+                </div>
+              ) : (
+                <>
+                  {audios.map((audio) => (
+                    <div
+                      key={audio.id}
+                      className="flex items-center gap-3 px-8 py-1.5"
+                    >
+                      <AudioLines className="h-3 w-3 text-purple-400" />
+                      <span className="text-xs text-zinc-400">{audio.title}</span>
+                      <span className="rounded-full bg-[#111] px-2 py-0.5 text-[10px] text-zinc-500">
+                        {audio.type}
+                      </span>
+                      {audio.duration && (
+                        <span className="text-[10px] text-zinc-600">
+                          {Math.floor(audio.duration / 60)}:{String(audio.duration % 60).padStart(2, "0")}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </>
+              )}
+              {chapter.children && renderChapterTree(chapter.children, depth + 1)}
+            </div>
+          )}
+        </div>
+      );
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+      </div>
+    );
+  }
+
+  if (!content) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-zinc-500">İçerik bulunamadı</p>
+        <Link href="/icerikler" className="mt-4 inline-block text-sm text-white hover:underline">
+          Geri dön
+        </Link>
+      </div>
+    );
+  }
+
+  const chapterTree = buildTree(chapters);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <Link
+          href="/icerikler"
+          className="rounded-lg border border-[#222] p-2 text-zinc-400 transition-colors hover:bg-[#111] hover:text-white"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Link>
+        <h1 className="text-xl font-bold text-white">{content.title}</h1>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+        {/* Left: Metadata Form (40%) */}
+        <div className="lg:col-span-2">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-4 rounded-xl border border-[#222] bg-[#0a0a0a] p-5"
+          >
+            <h2 className="text-sm font-semibold text-white">İçerik Bilgileri</h2>
+
+            {content.coverImageUrl && (
+              <img
+                src={content.coverImageUrl}
+                alt={content.title}
+                className="h-40 w-28 rounded-lg object-cover border border-[#222]"
+              />
+            )}
+
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-zinc-400">Başlık</label>
+              <input
+                type="text"
+                className={cn(
+                  "w-full rounded-lg border bg-[#111] px-3 py-2 text-sm text-white outline-none focus:border-white",
+                  errors.title ? "border-red-500" : "border-[#222]"
+                )}
+                {...register("title")}
+              />
+              {errors.title && <p className="text-xs text-red-500">{errors.title.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-zinc-400">Tür</label>
+              <select
+                className={cn(
+                  "w-full rounded-lg border bg-[#111] px-3 py-2 text-sm text-white outline-none focus:border-white",
+                  errors.type ? "border-red-500" : "border-[#222]"
+                )}
+                {...register("type")}
+              >
+                <option value="BOOK">Kitap</option>
+                <option value="PODCAST">Podcast</option>
+                <option value="LECTURE">Ders</option>
+                <option value="AUDIOBOOK">Sesli Kitap</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-zinc-400">Açıklama</label>
+              <textarea
+                rows={3}
+                className="w-full rounded-lg border border-[#222] bg-[#111] px-3 py-2 text-sm text-white outline-none focus:border-white resize-none"
+                {...register("description")}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-zinc-400">Yazar</label>
+              <input
+                type="text"
+                className="w-full rounded-lg border border-[#222] bg-[#111] px-3 py-2 text-sm text-white outline-none focus:border-white"
+                {...register("author")}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-zinc-400">Yayınevi</label>
+              <input
+                type="text"
+                className="w-full rounded-lg border border-[#222] bg-[#111] px-3 py-2 text-sm text-white outline-none focus:border-white"
+                {...register("publisher")}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:opacity-50"
+            >
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Kaydet
+            </button>
+          </form>
+        </div>
+
+        {/* Right: Chapter Tree (60%) */}
+        <div className="lg:col-span-3">
+          <div className="rounded-xl border border-[#222] bg-[#0a0a0a] p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-white">Bölümler</h2>
+              <button
+                onClick={() => {
+                  setNewChapterParentId(null);
+                  setShowNewChapter(true);
+                }}
+                className="flex items-center gap-1.5 rounded-lg bg-[#111] border border-[#222] px-3 py-1.5 text-xs text-zinc-300 transition-colors hover:bg-[#1a1a1a]"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Yeni Bölüm Ekle
+              </button>
+            </div>
+
+            {/* New chapter inline form */}
+            {showNewChapter && (
+              <div className="mb-4 flex items-center gap-2 rounded-lg border border-[#222] bg-[#111] p-3">
+                <input
+                  type="text"
+                  value={newChapterTitle}
+                  onChange={(e) => setNewChapterTitle(e.target.value)}
+                  placeholder="Bölüm adı"
+                  className="flex-1 rounded border border-[#333] bg-[#0a0a0a] px-3 py-1.5 text-sm text-white placeholder-zinc-600 outline-none focus:border-white"
+                  onKeyDown={(e) => e.key === "Enter" && handleCreateChapter()}
+                />
+                {newChapterParentId && (
+                  <span className="text-xs text-zinc-500">Alt bölüm</span>
+                )}
+                <button
+                  onClick={handleCreateChapter}
+                  disabled={creatingChapter || !newChapterTitle.trim()}
+                  className="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-black hover:bg-zinc-200 disabled:opacity-50"
+                >
+                  {creatingChapter ? <Loader2 className="h-3 w-3 animate-spin" /> : "Ekle"}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowNewChapter(false);
+                    setNewChapterTitle("");
+                    setNewChapterParentId(null);
+                  }}
+                  className="rounded p-1 text-zinc-500 hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+
+            {chapterTree.length === 0 ? (
+              <p className="text-sm text-zinc-500 py-8 text-center">
+                Henüz bölüm eklenmemiş
+              </p>
+            ) : (
+              <div className="space-y-0.5">{renderChapterTree(chapterTree)}</div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Audio Upload Modal */}
+      {audioModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="w-full max-w-md rounded-xl border border-[#222] bg-[#0a0a0a] p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-white">Ses Kaydı Ekle</h3>
+              <button
+                onClick={() => {
+                  setAudioModal(null);
+                  setAudioFile(null);
+                  setAudioTitle("");
+                }}
+                className="text-zinc-500 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-zinc-400">Başlık</label>
+              <input
+                type="text"
+                value={audioTitle}
+                onChange={(e) => setAudioTitle(e.target.value)}
+                placeholder="Ses kaydı başlığı"
+                className="w-full rounded-lg border border-[#222] bg-[#111] px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-white"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-zinc-400">Tür</label>
+              <select
+                value={audioType}
+                onChange={(e) => setAudioType(e.target.value)}
+                className="w-full rounded-lg border border-[#222] bg-[#111] px-3 py-2 text-sm text-white outline-none focus:border-white"
+              >
+                <option value="RECORDING">Kayıt</option>
+                <option value="MUSIC">Müzik</option>
+                <option value="NARRATION">Anlatım</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-zinc-400">Dosya</label>
+              <input
+                type="file"
+                accept="audio/*"
+                onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
+                className="w-full text-sm text-zinc-400 file:mr-3 file:rounded-lg file:border file:border-[#222] file:bg-[#111] file:px-3 file:py-1.5 file:text-xs file:text-zinc-300 file:cursor-pointer"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => {
+                  setAudioModal(null);
+                  setAudioFile(null);
+                  setAudioTitle("");
+                }}
+                className="rounded-lg border border-[#222] px-3 py-1.5 text-sm text-zinc-400 hover:bg-[#111]"
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleUploadAudio}
+                disabled={uploadingAudio || !audioFile || !audioTitle.trim()}
+                className="flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-black hover:bg-zinc-200 disabled:opacity-50"
+              >
+                {uploadingAudio && <Loader2 className="h-3 w-3 animate-spin" />}
+                Yükle
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

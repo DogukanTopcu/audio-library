@@ -28,6 +28,8 @@
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/throttler": "^6.5.0",
+    "@repo/db": "workspace:*",
+    "@repo/ui": "workspace:*",
     "bcryptjs": "^3.0.3",
     "cache-manager": "^7.2.8",
     "cache-manager-ioredis": "^2.1.0",
@@ -40,9 +42,7 @@
     "passport-local": "^1.0.0",
     "pg": "^8.20.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1",
-    "@repo/db": "workspace:*",
-    "@repo/ui": "workspace:*"
+    "rxjs": "^7.8.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -53,6 +53,7 @@
     "@types/bcryptjs": "^3.0.0",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
+    "@types/multer": "^2.1.0",
     "@types/node": "^22.10.7",
     "@types/passport-jwt": "^4.0.1",
     "@types/passport-local": "^1.0.38",
