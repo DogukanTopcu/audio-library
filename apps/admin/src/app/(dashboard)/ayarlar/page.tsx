@@ -101,7 +101,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -109,11 +109,11 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-white">Site Ayarları</h1>
+        <h1 className="text-xl font-bold text-foreground">Site Ayarları</h1>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:opacity-50"
+          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           Kaydet
@@ -121,7 +121,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 rounded-lg border border-[#222] bg-[#0a0a0a] p-1 w-fit">
+      <div className="flex items-center gap-1 rounded-lg border border-border bg-card p-1 w-fit">
         {TABS.map((tab) => (
           <button
             key={tab}
@@ -129,8 +129,8 @@ export default function SettingsPage() {
             className={cn(
               "rounded-md px-4 py-1.5 text-xs font-medium transition-colors",
               activeTab === tab
-                ? "bg-white text-black"
-                : "text-zinc-400 hover:text-white"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             {tab}
@@ -139,9 +139,9 @@ export default function SettingsPage() {
       </div>
 
       {/* Config fields */}
-      <div className="rounded-xl border border-[#222] bg-[#0a0a0a] p-5 space-y-4">
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
         {sectionConfigs.length === 0 ? (
-          <p className="text-sm text-zinc-500 py-8 text-center">
+          <p className="text-sm text-muted-foreground py-8 text-center">
             Bu bölümde henüz ayar bulunmuyor
           </p>
         ) : (
@@ -151,7 +151,7 @@ export default function SettingsPage() {
 
             return (
               <div key={item.id} className="space-y-2">
-                <label className="block text-xs font-medium text-zinc-400">
+                <label className="block text-xs font-medium text-muted-foreground">
                   {item.key}
                 </label>
                 {isJson ? (
@@ -159,7 +159,7 @@ export default function SettingsPage() {
                     rows={6}
                     value={value}
                     onChange={(e) => handleValueChange(item.key, e.target.value)}
-                    className="w-full rounded-lg border border-[#222] bg-[#111] px-3 py-2 text-sm text-white font-mono outline-none focus:border-white resize-y"
+                    className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground font-mono outline-none focus:border-ring resize-y"
                     spellCheck={false}
                   />
                 ) : (
@@ -167,7 +167,7 @@ export default function SettingsPage() {
                     type="text"
                     value={value}
                     onChange={(e) => handleValueChange(item.key, e.target.value)}
-                    className="w-full rounded-lg border border-[#222] bg-[#111] px-3 py-2 text-sm text-white outline-none focus:border-white"
+                    className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground outline-none focus:border-ring"
                   />
                 )}
               </div>

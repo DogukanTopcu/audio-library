@@ -42,13 +42,13 @@ const STATUS_TABS = [
 const statusBadge = (status: string) => {
   switch (status) {
     case "ACTIVE":
-      return { label: "Aktif", className: "bg-green-900/30 text-green-400" };
+      return { label: "Aktif", className: "bg-emerald-100 text-emerald-700" };
     case "PENDING":
-      return { label: "Bekleyen", className: "bg-yellow-900/30 text-yellow-400" };
+      return { label: "Bekleyen", className: "bg-amber-100 text-amber-700" };
     case "SUSPENDED":
-      return { label: "Askıda", className: "bg-red-900/30 text-red-400" };
+      return { label: "Askıda", className: "bg-red-100 text-red-700" };
     default:
-      return { label: status, className: "bg-zinc-800 text-zinc-400" };
+      return { label: status, className: "bg-muted text-muted-foreground" };
   }
 };
 
@@ -125,10 +125,10 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-white">Kullanıcılar</h1>
+      <h1 className="text-xl font-bold text-foreground">Kullanıcılar</h1>
 
       {/* Status tabs */}
-      <div className="flex items-center gap-1 rounded-lg border border-[#222] bg-[#0a0a0a] p-1 w-fit">
+      <div className="flex items-center gap-1 rounded-lg border border-border bg-card p-1 w-fit">
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.value}
@@ -139,8 +139,8 @@ export default function UsersPage() {
             className={cn(
               "relative rounded-md px-4 py-1.5 text-xs font-medium transition-colors",
               statusFilter === tab.value
-                ? "bg-white text-black"
-                : "text-zinc-400 hover:text-white"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             {tab.label}
@@ -156,25 +156,25 @@ export default function UsersPage() {
       {/* Table */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-[#222]">
+        <div className="overflow-x-auto rounded-xl border border-border">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[#222] bg-[#0a0a0a]">
-                <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400">Ad Soyad</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400">E-posta</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400">TC Kimlik</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400">Durum</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400">Kayıt Tarihi</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-zinc-400">İşlemler</th>
+              <tr className="border-b border-border bg-card">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Ad Soyad</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">E-posta</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">TC Kimlik</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Durum</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Kayıt Tarihi</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground">İşlemler</th>
               </tr>
             </thead>
             <tbody>
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-sm text-zinc-500">
+                  <td colSpan={6} className="px-4 py-12 text-center text-sm text-muted-foreground">
                     Kullanıcı bulunamadı
                   </td>
                 </tr>
@@ -182,23 +182,23 @@ export default function UsersPage() {
                 items.map((user) => {
                   const badge = statusBadge(user.status);
                   return (
-                    <tr key={user.id} className="border-b border-[#222] hover:bg-[#0a0a0a] transition-colors">
-                      <td className="px-4 py-3 text-sm font-medium text-white">{user.name}</td>
-                      <td className="px-4 py-3 text-sm text-zinc-400">{user.email}</td>
-                      <td className="px-4 py-3 text-sm text-zinc-500 font-mono">{maskTcId(user.tcId)}</td>
+                    <tr key={user.id} className="border-b border-border hover:bg-card transition-colors">
+                      <td className="px-4 py-3 text-sm font-medium text-foreground">{user.name}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{user.email}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground font-mono">{maskTcId(user.tcId)}</td>
                       <td className="px-4 py-3">
                         <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", badge.className)}>
                           {badge.label}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-zinc-500">
+                      <td className="px-4 py-3 text-sm text-muted-foreground">
                         {new Date(user.createdAt).toLocaleDateString("tr-TR")}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-2">
                           <Link
                             href={`/kullanicilar/${user.id}`}
-                            className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-[#111] hover:text-white"
+                            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                             title="Görüntüle"
                           >
                             <Eye className="h-4 w-4" />
@@ -207,7 +207,7 @@ export default function UsersPage() {
                             <button
                               onClick={() => handleVerify(user.id)}
                               disabled={actionId === user.id}
-                              className="rounded-lg p-1.5 text-green-400 transition-colors hover:bg-green-900/20 disabled:opacity-50"
+                              className="rounded-lg p-1.5 text-emerald-600 transition-colors hover:bg-emerald-50 disabled:opacity-50"
                               title="Onayla"
                             >
                               {actionId === user.id ? (
@@ -221,7 +221,7 @@ export default function UsersPage() {
                             <button
                               onClick={() => handleSuspend(user.id)}
                               disabled={actionId === user.id}
-                              className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-red-900/20 hover:text-red-400 disabled:opacity-50"
+                              className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
                               title="Askıya Al"
                             >
                               {actionId === user.id ? (
@@ -245,21 +245,21 @@ export default function UsersPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted-foreground">
             Sayfa {page} / {totalPages} (Toplam {data?.total ?? 0} kayıt)
           </p>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="rounded-lg border border-[#222] p-2 text-zinc-400 transition-colors hover:bg-[#111] hover:text-white disabled:opacity-30"
+              className="rounded-lg border border-border p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-30"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="rounded-lg border border-[#222] p-2 text-zinc-400 transition-colors hover:bg-[#111] hover:text-white disabled:opacity-30"
+              className="rounded-lg border border-border p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-30"
             >
               <ChevronRight className="h-4 w-4" />
             </button>

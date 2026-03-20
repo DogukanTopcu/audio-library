@@ -268,10 +268,10 @@ export default function AudioPlayerPage() {
       >
         <div className="flex flex-col items-center gap-4">
           <Loader2
-            className="w-12 h-12 text-white animate-spin"
+            className="w-12 h-12 text-foreground animate-spin"
             aria-hidden="true"
           />
-          <p className="text-[18px] text-[#a1a1aa]">Ses kaydi yukleniyor...</p>
+          <p className="text-[18px] text-muted-foreground">Ses kaydi yukleniyor...</p>
         </div>
       </div>
     );
@@ -296,16 +296,16 @@ export default function AudioPlayerPage() {
       {/* Content info */}
       <div className="w-full max-w-2xl text-center mb-10">
         {audioInfo?.contentTitle && (
-          <p className="text-[16px] text-[#52525b] mb-2">
+          <p className="text-[16px] text-muted-foreground mb-2">
             {audioInfo.contentTitle}
           </p>
         )}
         {audioInfo?.chapterTitle && (
-          <p className="text-[18px] text-[#a1a1aa] mb-2">
+          <p className="text-[18px] text-muted-foreground mb-2">
             {audioInfo.chapterTitle}
           </p>
         )}
-        <h1 className="text-2xl md:text-3xl font-bold text-white">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">
           {audioInfo?.title || "Ses Kaydi"}
         </h1>
       </div>
@@ -322,22 +322,22 @@ export default function AudioPlayerPage() {
             aria-valuemin={0}
             aria-valuemax={Math.floor(duration)}
             aria-valuetext={`${formatTime(currentTime)} / ${formatTime(duration)}`}
-            className="w-full h-3 bg-[#222222] rounded-full cursor-pointer relative group"
+            className="relative h-3 w-full cursor-pointer rounded-full bg-muted group"
             onClick={handleProgressClick}
             onKeyDown={handleProgressKeyDown}
           >
             <div
-              className="h-full bg-white rounded-full relative transition-all"
+              className="relative h-full rounded-full bg-primary transition-all"
               style={{ width: `${progressPercent}%` }}
             >
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" />
+              <div className="absolute right-0 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-primary shadow-lg opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100" />
             </div>
           </div>
           <div className="flex justify-between mt-2">
-            <span className="text-[18px] text-[#a1a1aa] font-mono">
+            <span className="text-[18px] text-muted-foreground font-mono">
               {formatTime(currentTime)}
             </span>
-            <span className="text-[18px] text-[#a1a1aa] font-mono">
+            <span className="text-[18px] text-muted-foreground font-mono">
               {formatTime(duration)}
             </span>
           </div>
@@ -350,7 +350,7 @@ export default function AudioPlayerPage() {
             onClick={goToPrevious}
             disabled={!audioInfo?.previousId}
             aria-label="Onceki kayit"
-            className="w-[56px] h-[56px] rounded-full bg-[#0a0a0a] border border-[#222222] text-white hover:bg-[#111111] hover:border-[#333333] disabled:opacity-30 flex items-center justify-center"
+            className="w-[56px] h-[56px] rounded-full bg-card border border-border text-foreground hover:bg-muted hover:border-ring disabled:opacity-30 flex items-center justify-center"
           >
             <SkipBack className="w-6 h-6" aria-hidden="true" />
           </Button>
@@ -359,7 +359,7 @@ export default function AudioPlayerPage() {
           <Button
             onClick={() => seek(-10)}
             aria-label="10 saniye geri"
-            className="w-[48px] h-[48px] rounded-full bg-[#0a0a0a] border border-[#222222] text-white hover:bg-[#111111] hover:border-[#333333] flex items-center justify-center text-[14px] font-bold"
+            className="w-[48px] h-[48px] rounded-full bg-card border border-border text-foreground hover:bg-muted hover:border-ring flex items-center justify-center text-[14px] font-bold"
           >
             -10
           </Button>
@@ -368,7 +368,7 @@ export default function AudioPlayerPage() {
           <button
             onClick={togglePlay}
             aria-label={isPlaying ? "Duraklat" : "Oynat"}
-            className="w-[80px] h-[80px] rounded-full bg-white text-black hover:bg-[#e4e4e7] transition-colors flex items-center justify-center shadow-lg"
+            className="w-[80px] h-[80px] rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center justify-center shadow-lg"
           >
             {isPlaying ? (
               <Pause className="w-10 h-10" aria-hidden="true" />
@@ -381,7 +381,7 @@ export default function AudioPlayerPage() {
           <Button
             onClick={() => seek(10)}
             aria-label="10 saniye ileri"
-            className="w-[48px] h-[48px] rounded-full bg-[#0a0a0a] border border-[#222222] text-white hover:bg-[#111111] hover:border-[#333333] flex items-center justify-center text-[14px] font-bold"
+            className="w-[48px] h-[48px] rounded-full bg-card border border-border text-foreground hover:bg-muted hover:border-ring flex items-center justify-center text-[14px] font-bold"
           >
             +10
           </Button>
@@ -391,7 +391,7 @@ export default function AudioPlayerPage() {
             onClick={goToNext}
             disabled={!audioInfo?.nextId}
             aria-label="Sonraki kayit"
-            className="w-[56px] h-[56px] rounded-full bg-[#0a0a0a] border border-[#222222] text-white hover:bg-[#111111] hover:border-[#333333] disabled:opacity-30 flex items-center justify-center"
+            className="w-[56px] h-[56px] rounded-full bg-card border border-border text-foreground hover:bg-muted hover:border-ring disabled:opacity-30 flex items-center justify-center"
           >
             <SkipForward className="w-6 h-6" aria-hidden="true" />
           </Button>
@@ -399,18 +399,18 @@ export default function AudioPlayerPage() {
 
         {/* Speed controls */}
         <div className="flex items-center justify-center gap-4 mb-8">
-          <span className="text-[16px] text-[#52525b]">Hiz:</span>
+          <span className="text-[16px] text-muted-foreground">Hiz:</span>
           <div className="flex items-center gap-2">
             <Button
               onClick={() => changeSpeed(-1)}
               aria-label="Hizi azalt"
               disabled={playbackSpeed <= SPEED_OPTIONS[0]!}
-              className="w-[48px] h-[48px] rounded-lg bg-[#0a0a0a] border border-[#222222] text-white hover:bg-[#111111] disabled:opacity-30 flex items-center justify-center"
+              className="w-[48px] h-[48px] rounded-lg bg-card border border-border text-foreground hover:bg-muted disabled:opacity-30 flex items-center justify-center"
             >
               <Minus className="w-5 h-5" aria-hidden="true" />
             </Button>
             <span
-              className="text-[20px] font-bold text-white min-w-[60px] text-center"
+              className="text-[20px] font-bold text-foreground min-w-[60px] text-center"
               aria-live="polite"
               aria-label={`Oynatma hizi: ${playbackSpeed} kat`}
             >
@@ -420,7 +420,7 @@ export default function AudioPlayerPage() {
               onClick={() => changeSpeed(1)}
               aria-label="Hizi artir"
               disabled={playbackSpeed >= SPEED_OPTIONS[SPEED_OPTIONS.length - 1]!}
-              className="w-[48px] h-[48px] rounded-lg bg-[#0a0a0a] border border-[#222222] text-white hover:bg-[#111111] disabled:opacity-30 flex items-center justify-center"
+              className="w-[48px] h-[48px] rounded-lg bg-card border border-border text-foreground hover:bg-muted disabled:opacity-30 flex items-center justify-center"
             >
               <Plus className="w-5 h-5" aria-hidden="true" />
             </Button>
@@ -442,8 +442,8 @@ export default function AudioPlayerPage() {
               aria-pressed={playbackSpeed === speed}
               className={`px-4 py-2 rounded-lg text-[16px] font-medium transition-colors min-h-[48px] ${
                 playbackSpeed === speed
-                  ? "bg-white text-black"
-                  : "bg-[#0a0a0a] border border-[#222222] text-[#a1a1aa] hover:text-white hover:border-[#333333]"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-ring"
               }`}
             >
               {speed}x
@@ -457,15 +457,15 @@ export default function AudioPlayerPage() {
             onClick={() => setShowShortcuts(!showShortcuts)}
             aria-expanded={showShortcuts}
             aria-label="Klavye kisayollarini goster"
-            className="inline-flex items-center gap-2 px-4 py-2 text-[16px] text-[#a1a1aa] hover:text-white bg-transparent border-none min-h-[48px]"
+            className="inline-flex items-center gap-2 px-4 py-2 text-[16px] text-muted-foreground hover:text-foreground bg-transparent border-none min-h-[48px]"
           >
             <Keyboard className="w-5 h-5" aria-hidden="true" />
             Klavye Kisayollari
           </Button>
 
           {showShortcuts && (
-            <div className="mt-4 bg-[#0a0a0a] border border-[#222222] rounded-xl p-6 text-left">
-              <h2 className="text-[18px] font-semibold text-white mb-4">
+            <div className="mt-4 bg-card border border-border rounded-xl p-6 text-left">
+              <h2 className="text-[18px] font-semibold text-foreground mb-4">
                 Klavye Kisayollari
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -482,10 +482,10 @@ export default function AudioPlayerPage() {
                     key={shortcut.key}
                     className="flex items-center gap-3"
                   >
-                    <kbd className="inline-flex items-center justify-center min-w-[40px] h-[36px] px-3 bg-[#111111] border border-[#333333] rounded text-[14px] font-mono text-white">
+                    <kbd className="inline-flex items-center justify-center min-w-[40px] h-[36px] px-3 bg-muted border border-input rounded text-[14px] font-mono text-foreground">
                       {shortcut.key}
                     </kbd>
-                    <span className="text-[16px] text-[#a1a1aa]">
+                    <span className="text-[16px] text-muted-foreground">
                       {shortcut.action}
                     </span>
                   </div>

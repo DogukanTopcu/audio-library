@@ -84,43 +84,43 @@ export default function ProgressPage() {
         aria-label="Ilerleme bilgileri yukleniyor"
       >
         <Loader2
-          className="w-10 h-10 text-white animate-spin"
+          className="w-10 h-10 text-foreground animate-spin"
           aria-hidden="true"
         />
-        <span className="ml-4 text-[18px] text-[#a1a1aa]">Yukleniyor...</span>
+        <span className="ml-4 text-[18px] text-muted-foreground">Yukleniyor...</span>
       </div>
     );
   }
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-      <h1 className="text-3xl font-bold text-white mb-8">Ilerleme</h1>
+      <h1 className="text-3xl font-bold text-foreground mb-8">Ilerleme</h1>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="bg-[#0a0a0a] border border-[#222222] rounded-xl p-6 text-center">
+        <div className="bg-card border border-border rounded-xl p-6 text-center">
           <Headphones
-            className="w-8 h-8 text-[#a1a1aa] mx-auto mb-2"
+            className="w-8 h-8 text-muted-foreground mx-auto mb-2"
             aria-hidden="true"
           />
-          <p className="text-[28px] font-bold text-white">{items.length}</p>
-          <p className="text-[16px] text-[#a1a1aa]">Toplam Kayit</p>
+          <p className="text-[28px] font-bold text-foreground">{items.length}</p>
+          <p className="text-[16px] text-muted-foreground">Toplam Kayit</p>
         </div>
-        <div className="bg-[#0a0a0a] border border-[#222222] rounded-xl p-6 text-center">
+        <div className="bg-card border border-border rounded-xl p-6 text-center">
           <PlayCircle
             className="w-8 h-8 text-[#eab308] mx-auto mb-2"
             aria-hidden="true"
           />
-          <p className="text-[28px] font-bold text-white">{inProgressCount}</p>
-          <p className="text-[16px] text-[#a1a1aa]">Devam Eden</p>
+          <p className="text-[28px] font-bold text-foreground">{inProgressCount}</p>
+          <p className="text-[16px] text-muted-foreground">Devam Eden</p>
         </div>
-        <div className="bg-[#0a0a0a] border border-[#222222] rounded-xl p-6 text-center">
+        <div className="bg-card border border-border rounded-xl p-6 text-center">
           <CheckCircle2
             className="w-8 h-8 text-[#22c55e] mx-auto mb-2"
             aria-hidden="true"
           />
-          <p className="text-[28px] font-bold text-white">{completedCount}</p>
-          <p className="text-[16px] text-[#a1a1aa]">Tamamlanan</p>
+          <p className="text-[28px] font-bold text-foreground">{completedCount}</p>
+          <p className="text-[16px] text-muted-foreground">Tamamlanan</p>
         </div>
       </div>
 
@@ -143,8 +143,8 @@ export default function ProgressPage() {
             onClick={() => setFilter(tab.key)}
             className={`px-5 py-3 rounded-lg text-[16px] font-medium transition-colors min-h-[48px] ${
               filter === tab.key
-                ? "bg-white text-black"
-                : "bg-[#0a0a0a] text-[#a1a1aa] border border-[#222222] hover:border-[#333333] hover:text-white"
+                ? "bg-primary text-primary-foreground"
+                : "bg-card text-muted-foreground border border-border hover:border-ring hover:text-foreground"
             }`}
           >
             {tab.label}
@@ -156,10 +156,10 @@ export default function ProgressPage() {
       {filteredItems.length === 0 ? (
         <div className="text-center py-16">
           <BarChart3
-            className="w-16 h-16 text-[#333333] mx-auto mb-4"
+            className="mx-auto mb-4 h-16 w-16 text-muted-foreground"
             aria-hidden="true"
           />
-          <p className="text-[20px] text-[#a1a1aa]">
+          <p className="text-[20px] text-muted-foreground">
             {items.length === 0
               ? "Henuz dinleme gecmisiniz bulunmamaktadir. Kesfet sayfasindan dinlemeye baslayabilirsiniz."
               : "Bu filtreyle eslesen kayit bulunamadi."}
@@ -167,7 +167,7 @@ export default function ProgressPage() {
           {items.length === 0 && (
             <Link
               href="/kesfet"
-              className="inline-flex items-center justify-center mt-6 px-8 py-4 bg-white text-black font-semibold rounded-lg text-[18px] no-underline hover:bg-[#e4e4e7] transition-colors min-h-[48px]"
+              className="inline-flex items-center justify-center mt-6 px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-lg text-[18px] no-underline hover:bg-primary/90 transition-colors min-h-[48px]"
               aria-label="Kesfet sayfasina git"
             >
               Kesfet
@@ -186,16 +186,16 @@ export default function ProgressPage() {
               <Link
                 key={item.id}
                 href={`/dinle/${item.audioRecordId}`}
-                className="block bg-[#0a0a0a] border border-[#222222] rounded-xl p-5 hover:border-[#333333] transition-colors no-underline"
+                className="block bg-card border border-border rounded-xl p-5 hover:border-ring transition-colors no-underline"
                 aria-label={`${item.audioTitle} - ${item.completed ? "Tamamlandi" : `Yuzde ${Math.round(progressPercent)} tamamlandi`}`}
               >
                 <div className="flex items-start justify-between gap-4 mb-3">
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-[18px] font-semibold text-white truncate">
+                    <h3 className="text-[18px] font-semibold text-foreground truncate">
                       {item.audioTitle}
                     </h3>
                     {item.contentTitle && (
-                      <p className="text-[14px] text-[#52525b] truncate mt-1">
+                      <p className="text-[14px] text-muted-foreground truncate mt-1">
                         {item.contentTitle}
                         {item.chapterTitle && ` - ${item.chapterTitle}`}
                       </p>
@@ -221,14 +221,14 @@ export default function ProgressPage() {
 
                 {/* Progress bar */}
                 <div className="mb-2">
-                  <div className="w-full h-2 bg-[#222222] rounded-full overflow-hidden">
+                  <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all"
                       style={{
                         width: `${progressPercent}%`,
                         backgroundColor: item.completed
                           ? "#22c55e"
-                          : "#ffffff",
+                          : "var(--primary)",
                       }}
                       role="progressbar"
                       aria-valuenow={Math.round(progressPercent)}
@@ -239,7 +239,7 @@ export default function ProgressPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[14px] text-[#52525b]">
+                <div className="flex items-center justify-between text-[14px] text-muted-foreground">
                   <span>
                     {formatTime(item.currentTime)} /{" "}
                     {formatTime(item.duration)}

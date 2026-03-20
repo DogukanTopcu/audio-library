@@ -1,159 +1,397 @@
-# Turborepo starter
+# Ozan Bayir Audio Library
 
-This Turborepo starter is maintained by the Turborepo core team.
+Monorepo for an audio library platform with:
 
-## Using this example
+- a user-facing web app
+- an admin panel
+- a NestJS backend API
+- a shared database package managed with Drizzle ORM
 
-Run the following command:
+The project is organized with Turborepo and PNPM workspaces.
 
-```sh
-npx create-turbo@latest
+## Tech Stack
+
+- Monorepo: Turborepo + PNPM workspaces
+- Web apps: Next.js 16, React 19, Tailwind CSS 4
+- API: NestJS 11
+- Database: PostgreSQL 16 + `pgvector` + `pg_trgm`
+- Cache / sessions / rate limiting support: Redis
+- ORM / migrations / seed: Drizzle ORM + Drizzle Kit
+- File storage: Google Cloud Storage
+
+## Applications
+
+- `apps/web`: user-facing application, runs on `http://localhost:3000`
+- `apps/admin`: admin panel, runs on `http://localhost:3002`
+- `apps/api`: backend API, runs on `http://localhost:3001`
+- `packages/db`: Drizzle schema, migrations, seed scripts
+- `packages/ui`: shared UI package
+- `packages/eslint-config`: shared ESLint config
+- `packages/typescript-config`: shared TypeScript config
+
+## Prerequisites
+
+Install these before starting:
+
+- Node.js 20+ recommended
+- PNPM 9
+- Docker Desktop or Docker Engine
+
+The repo declares `node >= 18`, but development has been verified with Node 20/22.
+
+## Quick Start
+
+This is the fastest local setup for development.
+
+### 1. Clone the repository
+
+```bash
+git clone <your-repo-url>
+cd ozan-bayir-audio-library
 ```
 
-## What's inside?
+### 2. Install dependencies
 
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+```bash
+pnpm install
 ```
 
-Without global `turbo`, use your package manager:
+### 3. Create environment files
 
-```sh
-cd my-turborepo
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+Tracked examples are included in the repo.
+
+```bash
+cp .env.example .env
+cp apps/web/.env.local.example apps/web/.env.local
+cp apps/admin/.env.local.example apps/admin/.env.local
+cp apps/api/.env.example apps/api/.env
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+Important notes:
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+- The root `.env` is used by the database scripts and by the API.
+- `apps/web/.env.local` and `apps/admin/.env.local` are used by the Next.js apps.
+- `apps/api/.env` is optional for local overrides; the API also loads the root `.env`.
 
-```sh
-turbo build --filter=docs
+### 4. Start local infrastructure
+
+Recommended for development:
+
+```bash
+docker compose up -d postgres redis
 ```
 
-Without global `turbo`:
+This starts:
 
-```sh
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+- PostgreSQL on `localhost:5432`
+- Redis on `localhost:6379`
+
+The Docker setup also runs [`infra/init.sql`](./infra/init.sql), which enables:
+
+- `vector`
+- `pg_trgm`
+
+If you use your own PostgreSQL instance instead of Docker, create those extensions manually.
+
+### 5. Run database migrations
+
+```bash
+pnpm db:migrate
 ```
 
-### Develop
+### 6. Seed demo data
 
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
+```bash
+pnpm db:seed
 ```
 
-Without global `turbo`, use your package manager:
+This creates demo accounts for both the admin panel and the user app.
 
-```sh
-cd my-turborepo
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+### 7. Start all apps
+
+```bash
+pnpm dev
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+This runs the workspace dev servers together through Turborepo.
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+## Local URLs
 
-```sh
-turbo dev --filter=web
+After `pnpm dev`, the local services are:
+
+- Web app: `http://localhost:3000`
+- API: `http://localhost:3001`
+- Swagger UI: `http://localhost:3001/api/docs`
+- Swagger JSON: `http://localhost:3001/api/docs-json`
+- Admin panel: `http://localhost:3002`
+
+## Demo Accounts
+
+Created by `pnpm db:seed`:
+
+### Admin panel
+
+- URL: `http://localhost:3002/login`
+- Email: `admin@ozanbayir.com`
+- Password: `Admin123!`
+
+### User app
+
+- URL: `http://localhost:3000/giris`
+- Email: `kullanici@ozanbayir.com`
+- Password: `Kullanici123!`
+
+## Environment Variables
+
+### Root `.env`
+
+Use `.env.example` as the default template.
+
+Main variables:
+
+- `DATABASE_URL`: PostgreSQL connection string used by the API and Drizzle scripts
+- `REDIS_HOST`: Redis hostname
+- `REDIS_PORT`: Redis port
+- `REDIS_PASSWORD`: Redis password
+- `JWT_SECRET`: required by the API auth module
+- `THROTTLE_TTL`: request throttling window in seconds
+- `THROTTLE_LIMIT`: max requests per window
+- `GCP_PROJECT_ID`: required for upload and signed URL features
+- `GCP_BUCKET_NAME`: bucket used for uploaded files and audio playback
+- `GCP_CREDENTIALS_JSON`: JSON string for a Google service account
+
+### `apps/web/.env.local`
+
+- `NEXT_PUBLIC_API_URL=http://localhost:3001/api`
+
+### `apps/admin/.env.local`
+
+- `NEXT_PUBLIC_API_URL=http://localhost:3001/api`
+
+### `apps/api/.env`
+
+This file is optional. It is useful if you want app-specific overrides such as:
+
+- `REDIS_HOST`
+- `REDIS_PORT`
+- `REDIS_PASSWORD`
+
+## Copy-Paste Environment Templates
+
+### Root `.env`
+
+```env
+DATABASE_URL=postgresql://ozan:secret@localhost:5432/ozanbayir
+
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=secret
+
+JWT_SECRET=change-this-in-real-environments
+THROTTLE_TTL=60
+THROTTLE_LIMIT=20
+
+# Optional for upload / signed URL features
+GCP_PROJECT_ID=
+GCP_BUCKET_NAME=ozan-bayir-assets
+GCP_CREDENTIALS_JSON=
 ```
 
-Without global `turbo`:
+### Web and admin `.env.local`
 
-```sh
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
 ```
 
-### Remote Caching
+## Common Commands
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+### Root commands
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
+```bash
+pnpm dev
+pnpm build
+pnpm lint
+pnpm check-types
+pnpm format
 ```
 
-Without global `turbo`, use your package manager:
+### Database commands
 
-```sh
-cd my-turborepo
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+```bash
+pnpm db:generate
+pnpm db:migrate
+pnpm db:seed
+pnpm db:studio
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+### Run apps individually
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
+```bash
+pnpm --filter web dev
+pnpm --filter admin dev
+pnpm --filter api start:dev
 ```
 
-Without global `turbo`:
+### Build apps individually
 
-```sh
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+```bash
+pnpm --filter web build
+pnpm --filter admin build
+pnpm --filter api build
 ```
 
-## Useful Links
+## Development Workflow
 
-Learn more about the power of Turborepo:
+Typical local workflow:
 
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+1. Start PostgreSQL and Redis with Docker.
+2. Run `pnpm install`.
+3. Copy env files from the provided examples.
+4. Run `pnpm db:migrate`.
+5. Run `pnpm db:seed`.
+6. Start all services with `pnpm dev`.
+7. Use the seeded credentials to verify login flows.
+
+If you change the database schema:
+
+1. Update files in `packages/db/src/schema`
+2. Run `pnpm db:generate`
+3. Run `pnpm db:migrate`
+4. Reseed if your feature depends on demo data
+
+## Project Structure
+
+```text
+.
+├── apps
+│   ├── admin        # Next.js admin panel
+│   ├── api          # NestJS backend
+│   └── web          # Next.js user-facing app
+├── infra
+│   └── init.sql     # PostgreSQL extensions for Docker setup
+├── packages
+│   ├── db           # Drizzle schema, migrations, seed
+│   ├── ui           # Shared UI components
+│   ├── eslint-config
+│   └── typescript-config
+├── docker-compose.yml
+├── turbo.json
+└── pnpm-workspace.yaml
+```
+
+## Backend Notes
+
+- The API uses a global prefix of `/api`.
+- Swagger is available at `/api/docs`.
+- The API loads env files from both its own folder and the repository root.
+- Redis is configured through Nest's `ConfigModule`.
+- Upload and signed URL functionality rely on Google Cloud Storage.
+
+## Google Cloud Storage Notes
+
+The app can start without valid GCP credentials, but upload-related features will not work.
+
+What still works without valid GCP credentials:
+
+- local boot
+- database migrations
+- database seed
+- login with seeded accounts
+- most non-upload routes
+
+What requires valid GCP configuration:
+
+- document upload
+- audio upload
+- signed URLs for bucket files
+
+If you see a warning like this in the API logs:
+
+```text
+Ignoring invalid GCP_CREDENTIALS_JSON. Upload routes will require valid credentials before use.
+```
+
+that means the API booted successfully, but GCP-backed routes are not ready yet.
+
+## Docker Notes
+
+`docker-compose.yml` includes an `api` service, but for day-to-day development the recommended setup is:
+
+- run `postgres` and `redis` with Docker
+- run `web`, `admin`, and `api` locally with PNPM
+
+That gives you hot reload for all apps.
+
+If you run the API through Docker, do not also run the local API on port `3001`.
+
+## Troubleshooting
+
+### `NOAUTH Authentication required` from Redis
+
+Make sure `REDIS_PASSWORD` matches between:
+
+- root `.env`
+- `apps/api/.env` if you use it
+- `docker-compose.yml`
+
+### Port `3001` is already in use
+
+Something else is already running on the API port.
+
+Common causes:
+
+- an old local `nest start --watch` process
+- the `api` Docker container
+
+Stop the conflicting process or change the port.
+
+### Login fails even though the apps are running
+
+Usually one of these is missing:
+
+- `pnpm db:migrate`
+- `pnpm db:seed`
+
+The seed step creates the demo admin and user credentials.
+
+### Web or admin cannot reach the backend
+
+Check:
+
+- `apps/web/.env.local`
+- `apps/admin/.env.local`
+
+Both should point to:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
+```
+
+### Need a clean local reset
+
+```bash
+docker compose down -v
+docker compose up -d postgres redis
+pnpm db:migrate
+pnpm db:seed
+```
+
+## Verified Commands
+
+These commands have been verified in this repository:
+
+- `pnpm db:migrate`
+- `pnpm db:seed`
+- `pnpm --filter api build`
+- `pnpm --filter web build`
+- `pnpm --filter admin build`
+
+## First Things To Check After Setup
+
+Once everything is running, verify these in order:
+
+1. Open `http://localhost:3001/api/docs`
+2. Open `http://localhost:3002/login` and log in with the seeded admin
+3. Open `http://localhost:3000/giris` and log in with the seeded user
+4. Confirm both apps are talking to the local API
+

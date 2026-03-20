@@ -81,13 +81,13 @@ export default function DiscoveryPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      <h1 className="text-3xl font-bold text-white mb-8">Kesfet</h1>
+      <h1 className="text-3xl font-bold text-foreground mb-8">Kesfet</h1>
 
       {/* Search Bar */}
       <form onSubmit={handleSearch} className="mb-6">
         <div className="relative">
           <Search
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-[#52525b]"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground"
             aria-hidden="true"
           />
           <Input
@@ -96,7 +96,7 @@ export default function DiscoveryPage() {
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Kitap, yazar veya konu ara..."
             aria-label="Icerik ara"
-            className="w-full h-[52px] pl-14 pr-4 text-[18px] bg-[#0a0a0a] border-[#222222] text-white placeholder:text-[#52525b] rounded-xl focus-visible:border-white focus-visible:ring-white/30"
+            className="w-full h-[52px] pl-14 pr-4 text-[18px] bg-card border-border text-foreground placeholder:text-muted-foreground rounded-xl focus-visible:border-ring focus-visible:ring-ring/30"
           />
         </div>
       </form>
@@ -116,8 +116,8 @@ export default function DiscoveryPage() {
             onClick={() => handleTypeChange(ct.key)}
             className={`px-5 py-3 rounded-lg text-[16px] font-medium transition-colors min-h-[48px] ${
               activeType === ct.key
-                ? "bg-white text-black"
-                : "bg-[#0a0a0a] text-[#a1a1aa] border border-[#222222] hover:border-[#333333] hover:text-white"
+                ? "bg-primary text-primary-foreground"
+                : "bg-card text-muted-foreground border border-border hover:border-ring hover:text-foreground"
             }`}
           >
             {ct.label}
@@ -133,20 +133,20 @@ export default function DiscoveryPage() {
           aria-label="Icerikler yukleniyor"
         >
           <Loader2
-            className="w-10 h-10 text-white animate-spin"
+            className="w-10 h-10 text-foreground animate-spin"
             aria-hidden="true"
           />
-          <span className="ml-4 text-[18px] text-[#a1a1aa]">
+          <span className="ml-4 text-[18px] text-muted-foreground">
             Yukleniyor...
           </span>
         </div>
       ) : items.length === 0 ? (
         <div className="text-center py-20">
           <BookOpen
-            className="w-16 h-16 text-[#333333] mx-auto mb-4"
+            className="mx-auto mb-4 h-16 w-16 text-muted-foreground"
             aria-hidden="true"
           />
-          <p className="text-[20px] text-[#a1a1aa]">
+          <p className="text-[20px] text-muted-foreground">
             Aramanizla eslesen icerik bulunamadi.
           </p>
         </div>
@@ -157,22 +157,22 @@ export default function DiscoveryPage() {
               <Link
                 key={item.id}
                 href={`/kesfet/${item.id}`}
-                className="block bg-[#0a0a0a] border border-[#222222] rounded-xl p-6 hover:border-[#333333] transition-colors no-underline group"
+                className="block bg-card border border-border rounded-xl p-6 hover:border-ring transition-colors no-underline group"
                 aria-label={`${item.title} - ${item.author}`}
               >
                 <div className="flex items-start justify-between gap-4 mb-3">
-                  <h2 className="text-xl font-semibold text-white group-hover:text-white/90">
+                  <h2 className="text-xl font-semibold text-foreground group-hover:text-foreground/90">
                     {item.title}
                   </h2>
                   {item.type && (
-                    <span className="flex-shrink-0 px-3 py-1 rounded-full text-[14px] font-medium bg-[#111111] text-[#a1a1aa] border border-[#222222] min-h-0">
+                    <span className="flex-shrink-0 px-3 py-1 rounded-full text-[14px] font-medium bg-muted text-muted-foreground border border-border min-h-0">
                       {typeLabels[item.type] || item.type}
                     </span>
                   )}
                 </div>
-                <p className="text-[16px] text-[#a1a1aa] mb-3">{item.author}</p>
+                <p className="text-[16px] text-muted-foreground mb-3">{item.author}</p>
                 {item.description && (
-                  <p className="text-[16px] text-[#52525b] line-clamp-2">
+                  <p className="text-[16px] text-muted-foreground line-clamp-2">
                     {item.description}
                   </p>
                 )}
@@ -190,13 +190,13 @@ export default function DiscoveryPage() {
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
                 aria-label="Onceki sayfa"
-                className="flex items-center gap-2 h-[48px] px-5 text-[16px] bg-[#0a0a0a] border border-[#222222] text-white hover:bg-[#111111] rounded-lg disabled:opacity-40"
+                className="flex items-center gap-2 h-[48px] px-5 text-[16px] bg-card border border-border text-foreground hover:bg-muted rounded-lg disabled:opacity-40"
               >
                 <ChevronLeft className="w-5 h-5" aria-hidden="true" />
                 Onceki
               </Button>
 
-              <span className="text-[18px] text-[#a1a1aa]" aria-live="polite">
+              <span className="text-[18px] text-muted-foreground" aria-live="polite">
                 Sayfa {meta.currentPage} / {meta.totalPages}
               </span>
 
@@ -206,7 +206,7 @@ export default function DiscoveryPage() {
                 }
                 disabled={page >= meta.totalPages}
                 aria-label="Sonraki sayfa"
-                className="flex items-center gap-2 h-[48px] px-5 text-[16px] bg-[#0a0a0a] border border-[#222222] text-white hover:bg-[#111111] rounded-lg disabled:opacity-40"
+                className="flex items-center gap-2 h-[48px] px-5 text-[16px] bg-card border border-border text-foreground hover:bg-muted rounded-lg disabled:opacity-40"
               >
                 Sonraki
                 <ChevronRight className="w-5 h-5" aria-hidden="true" />

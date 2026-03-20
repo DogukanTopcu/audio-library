@@ -51,10 +51,10 @@ export default function ProfilePage() {
         aria-label="Profil yukleniyor"
       >
         <Loader2
-          className="w-10 h-10 text-white animate-spin"
+          className="w-10 h-10 text-foreground animate-spin"
           aria-hidden="true"
         />
-        <span className="ml-4 text-[18px] text-[#a1a1aa]">Yukleniyor...</span>
+        <span className="ml-4 text-[18px] text-muted-foreground">Yukleniyor...</span>
       </div>
     );
   }
@@ -63,7 +63,7 @@ export default function ProfilePage() {
   if (!displayProfile) {
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 text-center">
-        <p className="text-[20px] text-[#a1a1aa]">
+        <p className="text-[20px] text-muted-foreground">
           Profil bilgileri bulunamadi.
         </p>
       </div>
@@ -86,20 +86,20 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
-      <h1 className="text-3xl font-bold text-white mb-8">Profil</h1>
+      <h1 className="text-3xl font-bold text-foreground mb-8">Profil</h1>
 
       {/* Profile card */}
-      <div className="bg-[#0a0a0a] border border-[#222222] rounded-xl p-8">
+      <div className="bg-card border border-border rounded-xl p-8">
         {/* Avatar / Name */}
-        <div className="flex items-center gap-5 mb-8 pb-8 border-b border-[#222222]">
+        <div className="flex items-center gap-5 mb-8 pb-8 border-b border-border">
           <div
-            className="w-20 h-20 rounded-full bg-[#111111] border border-[#333333] flex items-center justify-center flex-shrink-0"
+            className="w-20 h-20 rounded-full bg-muted border border-input flex items-center justify-center flex-shrink-0"
             aria-hidden="true"
           >
-            <User className="w-10 h-10 text-[#a1a1aa]" />
+            <User className="w-10 h-10 text-muted-foreground" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-white">
+            <h2 className="text-2xl font-bold text-foreground">
               {displayProfile.name}
             </h2>
             <div className="flex items-center gap-2 mt-2">
@@ -122,28 +122,28 @@ export default function ProfilePage() {
         <div className="space-y-6">
           <div className="flex items-center gap-4">
             <div
-              className="w-12 h-12 rounded-lg bg-[#111111] border border-[#222222] flex items-center justify-center flex-shrink-0"
+              className="w-12 h-12 rounded-lg bg-muted border border-border flex items-center justify-center flex-shrink-0"
               aria-hidden="true"
             >
-              <Mail className="w-6 h-6 text-[#a1a1aa]" />
+              <Mail className="w-6 h-6 text-muted-foreground" />
             </div>
             <div>
-              <p className="text-[14px] text-[#52525b]">E-posta Adresi</p>
-              <p className="text-[18px] text-white">{displayProfile.email}</p>
+              <p className="text-[14px] text-muted-foreground">E-posta Adresi</p>
+              <p className="text-[18px] text-foreground">{displayProfile.email}</p>
             </div>
           </div>
 
           {profile?.phone_number && (
             <div className="flex items-center gap-4">
               <div
-                className="w-12 h-12 rounded-lg bg-[#111111] border border-[#222222] flex items-center justify-center flex-shrink-0"
+                className="w-12 h-12 rounded-lg bg-muted border border-border flex items-center justify-center flex-shrink-0"
                 aria-hidden="true"
               >
-                <Phone className="w-6 h-6 text-[#a1a1aa]" />
+                <Phone className="w-6 h-6 text-muted-foreground" />
               </div>
               <div>
-                <p className="text-[14px] text-[#52525b]">Telefon Numarasi</p>
-                <p className="text-[18px] text-white">
+                <p className="text-[14px] text-muted-foreground">Telefon Numarasi</p>
+                <p className="text-[18px] text-foreground">
                   {profile.phone_number}
                 </p>
               </div>
@@ -152,13 +152,13 @@ export default function ProfilePage() {
 
           <div className="flex items-center gap-4">
             <div
-              className="w-12 h-12 rounded-lg bg-[#111111] border border-[#222222] flex items-center justify-center flex-shrink-0"
+              className="w-12 h-12 rounded-lg bg-muted border border-border flex items-center justify-center flex-shrink-0"
               aria-hidden="true"
             >
-              <Shield className="w-6 h-6 text-[#a1a1aa]" />
+              <Shield className="w-6 h-6 text-muted-foreground" />
             </div>
             <div>
-              <p className="text-[14px] text-[#52525b]">Hesap Durumu</p>
+              <p className="text-[14px] text-muted-foreground">Hesap Durumu</p>
               <p className="text-[18px]" style={{ color: statusInfo.color }}>
                 {statusInfo.text}
               </p>
@@ -168,14 +168,14 @@ export default function ProfilePage() {
           {memberSince && (
             <div className="flex items-center gap-4">
               <div
-                className="w-12 h-12 rounded-lg bg-[#111111] border border-[#222222] flex items-center justify-center flex-shrink-0"
+                className="w-12 h-12 rounded-lg bg-muted border border-border flex items-center justify-center flex-shrink-0"
                 aria-hidden="true"
               >
-                <Calendar className="w-6 h-6 text-[#a1a1aa]" />
+                <Calendar className="w-6 h-6 text-muted-foreground" />
               </div>
               <div>
-                <p className="text-[14px] text-[#52525b]">Uyelik Tarihi</p>
-                <p className="text-[18px] text-white">{memberSince}</p>
+                <p className="text-[14px] text-muted-foreground">Uyelik Tarihi</p>
+                <p className="text-[18px] text-foreground">{memberSince}</p>
               </div>
             </div>
           )}

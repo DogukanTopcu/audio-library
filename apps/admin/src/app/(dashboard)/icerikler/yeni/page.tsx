@@ -77,27 +77,27 @@ export default function CreateContentPage() {
       <div className="flex items-center gap-3">
         <Link
           href="/icerikler"
-          className="rounded-lg border border-[#222] p-2 text-zinc-400 transition-colors hover:bg-[#111] hover:text-white"
+          className="rounded-lg border border-border p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
         </Link>
-        <h1 className="text-xl font-bold text-white">Yeni İçerik</h1>
+        <h1 className="text-xl font-bold text-foreground">Yeni İçerik</h1>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 rounded-xl border border-[#222] bg-[#0a0a0a] p-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 rounded-xl border border-border bg-card p-6">
         {/* Cover Image */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-zinc-300">Kapak Görseli</label>
+          <label className="block text-sm font-medium text-muted-foreground">Kapak Görseli</label>
           <div className="flex items-start gap-4">
             {coverPreview ? (
               <img
                 src={coverPreview}
                 alt="Kapak önizleme"
-                className="h-32 w-24 rounded-lg object-cover border border-[#222]"
+                className="h-32 w-24 rounded-lg object-cover border border-border"
               />
             ) : (
-              <div className="flex h-32 w-24 items-center justify-center rounded-lg border border-dashed border-[#333] bg-[#111]">
-                <Upload className="h-6 w-6 text-zinc-600" />
+              <div className="flex h-32 w-24 items-center justify-center rounded-lg border border-dashed border-input bg-muted">
+                <Upload className="h-6 w-6 text-muted-foreground" />
               </div>
             )}
             <div className="flex-1">
@@ -105,16 +105,16 @@ export default function CreateContentPage() {
                 type="file"
                 accept="image/*"
                 onChange={handleCoverChange}
-                className="w-full text-sm text-zinc-400 file:mr-3 file:rounded-lg file:border file:border-[#222] file:bg-[#111] file:px-3 file:py-1.5 file:text-xs file:text-zinc-300 file:cursor-pointer hover:file:bg-[#1a1a1a]"
+                className="w-full text-sm text-muted-foreground file:mr-3 file:rounded-lg file:border file:border-border file:bg-muted file:px-3 file:py-1.5 file:text-xs file:text-muted-foreground file:cursor-pointer hover:file:bg-accent"
               />
-              <p className="mt-1 text-xs text-zinc-600">PNG, JPG veya WebP. Maks 5MB.</p>
+              <p className="mt-1 text-xs text-muted-foreground">PNG, JPG veya WebP. Maks 5MB.</p>
             </div>
           </div>
         </div>
 
         {/* Title */}
         <div className="space-y-2">
-          <label htmlFor="title" className="block text-sm font-medium text-zinc-300">
+          <label htmlFor="title" className="block text-sm font-medium text-muted-foreground">
             Başlık
           </label>
           <input
@@ -122,8 +122,8 @@ export default function CreateContentPage() {
             type="text"
             placeholder="İçerik başlığı"
             className={cn(
-              "w-full rounded-lg border bg-[#111] px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none transition-colors focus:border-white",
-              errors.title ? "border-red-500" : "border-[#222]"
+              "w-full rounded-lg border bg-muted px-4 py-2.5 text-sm text-foreground placeholder-zinc-600 outline-none transition-colors focus:border-ring",
+              errors.title ? "border-red-500" : "border-border"
             )}
             {...register("title")}
           />
@@ -132,14 +132,14 @@ export default function CreateContentPage() {
 
         {/* Type */}
         <div className="space-y-2">
-          <label htmlFor="type" className="block text-sm font-medium text-zinc-300">
+          <label htmlFor="type" className="block text-sm font-medium text-muted-foreground">
             Tür
           </label>
           <select
             id="type"
             className={cn(
-              "w-full rounded-lg border bg-[#111] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-white",
-              errors.type ? "border-red-500" : "border-[#222]"
+              "w-full rounded-lg border bg-muted px-4 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-ring",
+              errors.type ? "border-red-500" : "border-border"
             )}
             {...register("type")}
           >
@@ -154,42 +154,42 @@ export default function CreateContentPage() {
 
         {/* Description */}
         <div className="space-y-2">
-          <label htmlFor="description" className="block text-sm font-medium text-zinc-300">
+          <label htmlFor="description" className="block text-sm font-medium text-muted-foreground">
             Açıklama
           </label>
           <textarea
             id="description"
             rows={4}
             placeholder="İçerik açıklaması (opsiyonel)"
-            className="w-full rounded-lg border border-[#222] bg-[#111] px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none transition-colors focus:border-white resize-none"
+            className="w-full rounded-lg border border-border bg-muted px-4 py-2.5 text-sm text-foreground placeholder-zinc-600 outline-none transition-colors focus:border-ring resize-none"
             {...register("description")}
           />
         </div>
 
         {/* Author */}
         <div className="space-y-2">
-          <label htmlFor="author" className="block text-sm font-medium text-zinc-300">
+          <label htmlFor="author" className="block text-sm font-medium text-muted-foreground">
             Yazar
           </label>
           <input
             id="author"
             type="text"
             placeholder="Yazar adı (opsiyonel)"
-            className="w-full rounded-lg border border-[#222] bg-[#111] px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none transition-colors focus:border-white"
+            className="w-full rounded-lg border border-border bg-muted px-4 py-2.5 text-sm text-foreground placeholder-zinc-600 outline-none transition-colors focus:border-ring"
             {...register("author")}
           />
         </div>
 
         {/* Publisher */}
         <div className="space-y-2">
-          <label htmlFor="publisher" className="block text-sm font-medium text-zinc-300">
+          <label htmlFor="publisher" className="block text-sm font-medium text-muted-foreground">
             Yayınevi
           </label>
           <input
             id="publisher"
             type="text"
             placeholder="Yayınevi (opsiyonel)"
-            className="w-full rounded-lg border border-[#222] bg-[#111] px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none transition-colors focus:border-white"
+            className="w-full rounded-lg border border-border bg-muted px-4 py-2.5 text-sm text-foreground placeholder-zinc-600 outline-none transition-colors focus:border-ring"
             {...register("publisher")}
           />
         </div>
@@ -198,14 +198,14 @@ export default function CreateContentPage() {
         <div className="flex justify-end gap-3 pt-2">
           <Link
             href="/icerikler"
-            className="rounded-lg border border-[#222] px-4 py-2 text-sm text-zinc-400 transition-colors hover:bg-[#111] hover:text-white"
+            className="rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             İptal
           </Link>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
           >
             {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
             Oluştur

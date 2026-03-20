@@ -46,21 +46,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-black px-4">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center space-y-3">
-          <span className="inline-block rounded-full border border-[#222] bg-[#0a0a0a] px-3 py-1 text-xs text-zinc-400">
+          <span className="inline-block rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
             Yönetici Paneli
           </span>
-          <h1 className="text-2xl font-bold text-white">Yönetici Girişi</h1>
-          <p className="text-sm text-zinc-500">
+          <h1 className="text-2xl font-bold text-foreground">Yönetici Girişi</h1>
+          <p className="text-sm text-muted-foreground">
             Devam etmek için giriş yapınız
           </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div className="space-y-2">
-            <label htmlFor="email" className="block text-sm font-medium text-zinc-300">
+            <label htmlFor="email" className="block text-sm font-medium text-muted-foreground">
               E-posta
             </label>
             <input
@@ -69,8 +69,8 @@ export default function LoginPage() {
               autoComplete="email"
               placeholder="admin@example.com"
               className={cn(
-                "w-full rounded-lg border bg-[#0a0a0a] px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none transition-colors focus:border-white",
-                errors.email ? "border-red-500" : "border-[#222]"
+                "w-full rounded-lg border bg-card px-4 py-2.5 text-sm text-foreground placeholder-zinc-600 outline-none transition-colors focus:border-ring",
+                errors.email ? "border-red-500" : "border-border"
               )}
               {...register("email")}
             />
@@ -80,7 +80,7 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-medium text-zinc-300">
+            <label htmlFor="password" className="block text-sm font-medium text-muted-foreground">
               Şifre
             </label>
             <input
@@ -89,8 +89,8 @@ export default function LoginPage() {
               autoComplete="current-password"
               placeholder="********"
               className={cn(
-                "w-full rounded-lg border bg-[#0a0a0a] px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none transition-colors focus:border-white",
-                errors.password ? "border-red-500" : "border-[#222]"
+                "w-full rounded-lg border bg-card px-4 py-2.5 text-sm text-foreground placeholder-zinc-600 outline-none transition-colors focus:border-ring",
+                errors.password ? "border-red-500" : "border-border"
               )}
               {...register("password")}
             />
@@ -102,7 +102,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
           >
             {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />

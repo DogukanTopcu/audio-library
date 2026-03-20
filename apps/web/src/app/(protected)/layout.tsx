@@ -36,16 +36,16 @@ export default function ProtectedLayout({
   if (isLoading) {
     return (
       <div
-        className="min-h-screen flex items-center justify-center bg-black"
+        className="min-h-screen flex items-center justify-center bg-background"
         role="status"
         aria-label="Yukleniyor"
       >
         <div className="flex flex-col items-center gap-4">
           <Loader2
-            className="w-12 h-12 text-white animate-spin"
+            className="w-12 h-12 text-foreground animate-spin"
             aria-hidden="true"
           />
-          <p className="text-[18px] text-[#a1a1aa]">Yukleniyor...</p>
+          <p className="text-[18px] text-muted-foreground">Yukleniyor...</p>
         </div>
       </div>
     );
@@ -56,9 +56,9 @@ export default function ProtectedLayout({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-black">
+    <div className="min-h-screen flex flex-col bg-background">
       {/* Top Navigation */}
-      <header className="sticky top-0 z-50 border-b border-[#222222] bg-[#0a0a0a]">
+      <header className="sticky top-0 z-50 border-b border-border bg-card">
         <nav
           className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16"
           aria-label="Ana navigasyon"
@@ -66,7 +66,7 @@ export default function ProtectedLayout({
           {/* Logo / Title */}
           <Link
             href="/kesfet"
-            className="text-[20px] font-bold text-white no-underline hover:opacity-80 transition-opacity"
+            className="text-[20px] font-bold text-foreground no-underline hover:opacity-80 transition-opacity"
             aria-label="Ana sayfaya git"
           >
             Sesli Kutuphane
@@ -85,8 +85,8 @@ export default function ProtectedLayout({
                   aria-current={isActive ? "page" : undefined}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[16px] font-medium no-underline transition-colors min-h-[48px] ${
                     isActive
-                      ? "bg-white text-black"
-                      : "text-[#a1a1aa] hover:text-white hover:bg-[#111111]"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
                 >
                   <Icon className="w-5 h-5" aria-hidden="true" />
@@ -98,7 +98,7 @@ export default function ProtectedLayout({
             <Button
               onClick={handleLogout}
               aria-label="Cikis yap"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-[16px] font-medium text-[#a1a1aa] hover:text-white hover:bg-[#111111] bg-transparent border-none min-h-[48px] ml-2"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-[16px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted bg-transparent border-none min-h-[48px] ml-2"
             >
               <LogOut className="w-5 h-5" aria-hidden="true" />
               <span className="hidden sm:inline">Cikis</span>

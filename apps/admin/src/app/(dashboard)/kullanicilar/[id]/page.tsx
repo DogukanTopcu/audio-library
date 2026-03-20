@@ -32,9 +32,9 @@ interface UserData {
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-  ACTIVE: { label: "Aktif", className: "bg-green-900/30 text-green-400 border-green-800" },
-  PENDING: { label: "Bekleyen", className: "bg-yellow-900/30 text-yellow-400 border-yellow-800" },
-  SUSPENDED: { label: "Askıda", className: "bg-red-900/30 text-red-400 border-red-800" },
+  ACTIVE: { label: "Aktif", className: "border-emerald-200 bg-emerald-100 text-emerald-700" },
+  PENDING: { label: "Bekleyen", className: "border-amber-200 bg-amber-100 text-amber-700" },
+  SUSPENDED: { label: "Askıda", className: "border-red-200 bg-red-100 text-red-700" },
 };
 
 export default function UserDetailPage() {
@@ -104,7 +104,7 @@ export default function UserDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -112,8 +112,8 @@ export default function UserDetailPage() {
   if (!user) {
     return (
       <div className="text-center py-20">
-        <p className="text-zinc-500">Kullanıcı bulunamadı</p>
-        <Link href="/kullanicilar" className="mt-4 inline-block text-sm text-white hover:underline">
+        <p className="text-muted-foreground">Kullanıcı bulunamadı</p>
+        <Link href="/kullanicilar" className="mt-4 inline-block text-sm text-foreground hover:underline">
           Geri dön
         </Link>
       </div>
@@ -122,7 +122,7 @@ export default function UserDetailPage() {
 
   const status = statusConfig[user.status] || {
     label: user.status,
-    className: "bg-zinc-800 text-zinc-400 border-zinc-700",
+    className: "border-border bg-muted text-muted-foreground",
   };
 
   return (
@@ -130,23 +130,23 @@ export default function UserDetailPage() {
       <div className="flex items-center gap-3">
         <Link
           href="/kullanicilar"
-          className="rounded-lg border border-[#222] p-2 text-zinc-400 transition-colors hover:bg-[#111] hover:text-white"
+          className="rounded-lg border border-border p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
         </Link>
-        <h1 className="text-xl font-bold text-white">Kullanıcı Detayı</h1>
+        <h1 className="text-xl font-bold text-foreground">Kullanıcı Detayı</h1>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Profile Card */}
-        <div className="rounded-xl border border-[#222] bg-[#0a0a0a] p-6 space-y-5">
+        <div className="rounded-xl border border-border bg-card p-6 space-y-5">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#111] border border-[#222]">
-                <UserIcon className="h-6 w-6 text-zinc-400" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted border border-border">
+                <UserIcon className="h-6 w-6 text-muted-foreground" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-white">{user.name}</h2>
+                <h2 className="text-lg font-semibold text-foreground">{user.name}</h2>
                 <span className={cn("inline-block mt-1 rounded-full border px-2.5 py-0.5 text-xs font-medium", status.className)}>
                   {status.label}
                 </span>
@@ -156,26 +156,26 @@ export default function UserDetailPage() {
 
           <div className="space-y-3 pt-2">
             <div className="flex items-center gap-3 text-sm">
-              <Mail className="h-4 w-4 text-zinc-500" />
-              <span className="text-zinc-400">{user.email}</span>
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">{user.email}</span>
             </div>
             {user.phone && (
               <div className="flex items-center gap-3 text-sm">
-                <Shield className="h-4 w-4 text-zinc-500" />
-                <span className="text-zinc-400">{user.phone}</span>
+                <Shield className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">{user.phone}</span>
               </div>
             )}
             {user.tcId && (
               <div className="flex items-center gap-3 text-sm">
-                <FileText className="h-4 w-4 text-zinc-500" />
-                <span className="text-zinc-400 font-mono">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground font-mono">
                   {user.tcId.slice(0, 3)}{"*".repeat(Math.max(0, user.tcId.length - 3))}
                 </span>
               </div>
             )}
             <div className="flex items-center gap-3 text-sm">
-              <Calendar className="h-4 w-4 text-zinc-500" />
-              <span className="text-zinc-400">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">
                 {new Date(user.createdAt).toLocaleDateString("tr-TR", {
                   year: "numeric",
                   month: "long",
@@ -186,12 +186,12 @@ export default function UserDetailPage() {
           </div>
 
           {/* Action buttons */}
-          <div className="flex items-center gap-3 pt-3 border-t border-[#222]">
+          <div className="flex items-center gap-3 pt-3 border-t border-border">
             {user.status === "PENDING" && (
               <button
                 onClick={handleVerify}
                 disabled={actionLoading}
-                className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
+                className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
               >
                 {actionLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -219,28 +219,28 @@ export default function UserDetailPage() {
         </div>
 
         {/* Document Viewer */}
-        <div className="rounded-xl border border-[#222] bg-[#0a0a0a] p-6">
-          <h2 className="text-sm font-semibold text-white mb-4">Belgeler</h2>
+        <div className="rounded-xl border border-border bg-card p-6">
+          <h2 className="text-sm font-semibold text-foreground mb-4">Belgeler</h2>
           {docUrl ? (
             <div className="space-y-3">
               {user.documentType?.includes("pdf") ? (
                 <iframe
                   src={docUrl}
-                  className="w-full h-[500px] rounded-lg border border-[#222] bg-[#111]"
+                  className="w-full h-[500px] rounded-lg border border-border bg-muted"
                   title="Kullanıcı belgesi"
                 />
               ) : (
                 <img
                   src={docUrl}
                   alt="Kullanıcı belgesi"
-                  className="w-full max-h-[500px] rounded-lg border border-[#222] object-contain bg-[#111]"
+                  className="w-full max-h-[500px] rounded-lg border border-border object-contain bg-muted"
                 />
               )}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <FileText className="h-10 w-10 text-zinc-700 mb-3" />
-              <p className="text-sm text-zinc-500">Belge yüklenmemiş</p>
+              <FileText className="mb-3 h-10 w-10 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">Belge yüklenmemiş</p>
             </div>
           )}
         </div>

@@ -30,28 +30,29 @@
   --radius-xl: calc(var(--radius) * 1.4);
 }
 
-/* Light / White theme */
+/* Light theme */
 :root {
-  --background: #ffffff;
-  --foreground: #09090b;
+  color-scheme: light;
+  --background: #f6f8fb;
+  --foreground: #0f172a;
   --card: #ffffff;
-  --card-foreground: #09090b;
+  --card-foreground: #0f172a;
   --popover: #ffffff;
-  --popover-foreground: #09090b;
-  --primary: #18181b;
-  --primary-foreground: #fafafa;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #18181b;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --accent: #f4f4f5;
-  --accent-foreground: #18181b;
+  --popover-foreground: #0f172a;
+  --primary: #2563eb;
+  --primary-foreground: #eff6ff;
+  --secondary: #e2e8f0;
+  --secondary-foreground: #0f172a;
+  --muted: #edf2f7;
+  --muted-foreground: #64748b;
+  --accent: #e8eef9;
+  --accent-foreground: #1e3a8a;
   --destructive: #ef4444;
   --success: #16a34a;
   --warning: #ca8a04;
-  --border: #e4e4e7;
-  --input: #e4e4e7;
-  --ring: #18181b;
+  --border: #d7e1ec;
+  --input: #d7e1ec;
+  --ring: #2563eb;
   --radius: 0.625rem;
 }
 
@@ -65,7 +66,7 @@
     line-height: 1.6;
   }
   *:focus-visible {
-    outline: 2px solid #18181b;
+    outline: 2px solid #2563eb;
     outline-offset: 2px;
   }
 }

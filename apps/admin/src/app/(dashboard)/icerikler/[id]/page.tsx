@@ -252,10 +252,10 @@ export default function ContentDetailPage() {
 
       return (
         <div key={chapter.id} style={{ marginLeft: depth * 20 }}>
-          <div className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-[#111] transition-colors group">
+          <div className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-muted transition-colors group">
             <button
               onClick={() => toggleChapter(chapter.id)}
-              className="text-zinc-500 hover:text-white"
+              className="text-muted-foreground hover:text-foreground"
             >
               {isExpanded ? (
                 <ChevronDown className="h-4 w-4" />
@@ -263,9 +263,9 @@ export default function ContentDetailPage() {
                 <ChevronRight className="h-4 w-4" />
               )}
             </button>
-            <FolderOpen className="h-4 w-4 text-zinc-500" />
-            <span className="flex-1 text-sm text-white">{chapter.title}</span>
-            <span className="text-xs text-zinc-600">
+            <FolderOpen className="h-4 w-4 text-muted-foreground" />
+            <span className="flex-1 text-sm text-foreground">{chapter.title}</span>
+            <span className="text-xs text-muted-foreground">
               {subCount > 0 && `${subCount} alt bolum`}
               {subCount > 0 && audioCount > 0 && " / "}
               {audioCount > 0 && `${audioCount} ses`}
@@ -275,32 +275,32 @@ export default function ContentDetailPage() {
                 setNewChapterParentId(chapter.id);
                 setShowNewChapter(true);
               }}
-              className="opacity-0 group-hover:opacity-100 rounded p-1 text-zinc-500 hover:text-white"
+              className="opacity-0 group-hover:opacity-100 rounded p-1 text-muted-foreground hover:text-foreground"
               title="Alt bölüm ekle"
             >
               <Plus className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => setAudioModal({ chapterId: chapter.id })}
-              className="opacity-0 group-hover:opacity-100 rounded p-1 text-zinc-500 hover:text-white"
+              className="opacity-0 group-hover:opacity-100 rounded p-1 text-muted-foreground hover:text-foreground"
               title="Ses kaydı ekle"
             >
               <AudioLines className="h-3.5 w-3.5" />
             </button>
             <Link
               href={`/icerikler/${id}/bolumler/${chapter.id}`}
-              className="opacity-0 group-hover:opacity-100 text-xs text-zinc-500 hover:text-white"
+              className="opacity-0 group-hover:opacity-100 text-xs text-muted-foreground hover:text-foreground"
             >
               Detay
             </Link>
           </div>
 
           {isExpanded && (
-            <div className="ml-2 border-l border-[#222]">
+            <div className="ml-2 border-l border-border">
               {isLoadingAudio ? (
                 <div className="flex items-center gap-2 px-6 py-2">
-                  <Loader2 className="h-3 w-3 animate-spin text-zinc-500" />
-                  <span className="text-xs text-zinc-500">Yükleniyor...</span>
+                  <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">Yükleniyor...</span>
                 </div>
               ) : (
                 <>
@@ -309,13 +309,13 @@ export default function ContentDetailPage() {
                       key={audio.id}
                       className="flex items-center gap-3 px-8 py-1.5"
                     >
-                      <AudioLines className="h-3 w-3 text-purple-400" />
-                      <span className="text-xs text-zinc-400">{audio.title}</span>
-                      <span className="rounded-full bg-[#111] px-2 py-0.5 text-[10px] text-zinc-500">
+                      <AudioLines className="h-3 w-3 text-violet-600" />
+                      <span className="text-xs text-muted-foreground">{audio.title}</span>
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
                         {audio.type}
                       </span>
                       {audio.duration && (
-                        <span className="text-[10px] text-zinc-600">
+                        <span className="text-[10px] text-muted-foreground">
                           {Math.floor(audio.duration / 60)}:{String(audio.duration % 60).padStart(2, "0")}
                         </span>
                       )}
@@ -334,7 +334,7 @@ export default function ContentDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -342,8 +342,8 @@ export default function ContentDetailPage() {
   if (!content) {
     return (
       <div className="text-center py-20">
-        <p className="text-zinc-500">İçerik bulunamadı</p>
-        <Link href="/icerikler" className="mt-4 inline-block text-sm text-white hover:underline">
+        <p className="text-muted-foreground">İçerik bulunamadı</p>
+        <Link href="/icerikler" className="mt-4 inline-block text-sm text-foreground hover:underline">
           Geri dön
         </Link>
       </div>
@@ -357,11 +357,11 @@ export default function ContentDetailPage() {
       <div className="flex items-center gap-3">
         <Link
           href="/icerikler"
-          className="rounded-lg border border-[#222] p-2 text-zinc-400 transition-colors hover:bg-[#111] hover:text-white"
+          className="rounded-lg border border-border p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
         </Link>
-        <h1 className="text-xl font-bold text-white">{content.title}</h1>
+        <h1 className="text-xl font-bold text-foreground">{content.title}</h1>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
@@ -369,25 +369,25 @@ export default function ContentDetailPage() {
         <div className="lg:col-span-2">
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="space-y-4 rounded-xl border border-[#222] bg-[#0a0a0a] p-5"
+            className="space-y-4 rounded-xl border border-border bg-card p-5"
           >
-            <h2 className="text-sm font-semibold text-white">İçerik Bilgileri</h2>
+            <h2 className="text-sm font-semibold text-foreground">İçerik Bilgileri</h2>
 
             {content.coverImageUrl && (
               <img
                 src={content.coverImageUrl}
                 alt={content.title}
-                className="h-40 w-28 rounded-lg object-cover border border-[#222]"
+                className="h-40 w-28 rounded-lg object-cover border border-border"
               />
             )}
 
             <div className="space-y-2">
-              <label className="block text-xs font-medium text-zinc-400">Başlık</label>
+              <label className="block text-xs font-medium text-muted-foreground">Başlık</label>
               <input
                 type="text"
                 className={cn(
-                  "w-full rounded-lg border bg-[#111] px-3 py-2 text-sm text-white outline-none focus:border-white",
-                  errors.title ? "border-red-500" : "border-[#222]"
+                  "w-full rounded-lg border bg-muted px-3 py-2 text-sm text-foreground outline-none focus:border-ring",
+                  errors.title ? "border-red-500" : "border-border"
                 )}
                 {...register("title")}
               />
@@ -395,11 +395,11 @@ export default function ContentDetailPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-medium text-zinc-400">Tür</label>
+              <label className="block text-xs font-medium text-muted-foreground">Tür</label>
               <select
                 className={cn(
-                  "w-full rounded-lg border bg-[#111] px-3 py-2 text-sm text-white outline-none focus:border-white",
-                  errors.type ? "border-red-500" : "border-[#222]"
+                  "w-full rounded-lg border bg-muted px-3 py-2 text-sm text-foreground outline-none focus:border-ring",
+                  errors.type ? "border-red-500" : "border-border"
                 )}
                 {...register("type")}
               >
@@ -411,28 +411,28 @@ export default function ContentDetailPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-medium text-zinc-400">Açıklama</label>
+              <label className="block text-xs font-medium text-muted-foreground">Açıklama</label>
               <textarea
                 rows={3}
-                className="w-full rounded-lg border border-[#222] bg-[#111] px-3 py-2 text-sm text-white outline-none focus:border-white resize-none"
+                className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground outline-none focus:border-ring resize-none"
                 {...register("description")}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-medium text-zinc-400">Yazar</label>
+              <label className="block text-xs font-medium text-muted-foreground">Yazar</label>
               <input
                 type="text"
-                className="w-full rounded-lg border border-[#222] bg-[#111] px-3 py-2 text-sm text-white outline-none focus:border-white"
+                className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground outline-none focus:border-ring"
                 {...register("author")}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-medium text-zinc-400">Yayınevi</label>
+              <label className="block text-xs font-medium text-muted-foreground">Yayınevi</label>
               <input
                 type="text"
-                className="w-full rounded-lg border border-[#222] bg-[#111] px-3 py-2 text-sm text-white outline-none focus:border-white"
+                className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground outline-none focus:border-ring"
                 {...register("publisher")}
               />
             </div>
@@ -440,7 +440,7 @@ export default function ContentDetailPage() {
             <button
               type="submit"
               disabled={saving}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
             >
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Kaydet
@@ -450,15 +450,15 @@ export default function ContentDetailPage() {
 
         {/* Right: Chapter Tree (60%) */}
         <div className="lg:col-span-3">
-          <div className="rounded-xl border border-[#222] bg-[#0a0a0a] p-5">
+          <div className="rounded-xl border border-border bg-card p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-white">Bölümler</h2>
+              <h2 className="text-sm font-semibold text-foreground">Bölümler</h2>
               <button
                 onClick={() => {
                   setNewChapterParentId(null);
                   setShowNewChapter(true);
                 }}
-                className="flex items-center gap-1.5 rounded-lg bg-[#111] border border-[#222] px-3 py-1.5 text-xs text-zinc-300 transition-colors hover:bg-[#1a1a1a]"
+                className="flex items-center gap-1.5 rounded-lg border border-border bg-muted px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-accent"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Yeni Bölüm Ekle
@@ -467,22 +467,22 @@ export default function ContentDetailPage() {
 
             {/* New chapter inline form */}
             {showNewChapter && (
-              <div className="mb-4 flex items-center gap-2 rounded-lg border border-[#222] bg-[#111] p-3">
+              <div className="mb-4 flex items-center gap-2 rounded-lg border border-border bg-muted p-3">
                 <input
                   type="text"
                   value={newChapterTitle}
                   onChange={(e) => setNewChapterTitle(e.target.value)}
                   placeholder="Bölüm adı"
-                  className="flex-1 rounded border border-[#333] bg-[#0a0a0a] px-3 py-1.5 text-sm text-white placeholder-zinc-600 outline-none focus:border-white"
+                  className="flex-1 rounded border border-input bg-card px-3 py-1.5 text-sm text-foreground placeholder-zinc-600 outline-none focus:border-ring"
                   onKeyDown={(e) => e.key === "Enter" && handleCreateChapter()}
                 />
                 {newChapterParentId && (
-                  <span className="text-xs text-zinc-500">Alt bölüm</span>
+                  <span className="text-xs text-muted-foreground">Alt bölüm</span>
                 )}
                 <button
                   onClick={handleCreateChapter}
                   disabled={creatingChapter || !newChapterTitle.trim()}
-                  className="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-black hover:bg-zinc-200 disabled:opacity-50"
+                  className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                 >
                   {creatingChapter ? <Loader2 className="h-3 w-3 animate-spin" /> : "Ekle"}
                 </button>
@@ -492,7 +492,7 @@ export default function ContentDetailPage() {
                     setNewChapterTitle("");
                     setNewChapterParentId(null);
                   }}
-                  className="rounded p-1 text-zinc-500 hover:text-white"
+                  className="rounded p-1 text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -500,7 +500,7 @@ export default function ContentDetailPage() {
             )}
 
             {chapterTree.length === 0 ? (
-              <p className="text-sm text-zinc-500 py-8 text-center">
+              <p className="text-sm text-muted-foreground py-8 text-center">
                 Henüz bölüm eklenmemiş
               </p>
             ) : (
@@ -512,39 +512,39 @@ export default function ContentDetailPage() {
 
       {/* Audio Upload Modal */}
       {audioModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="w-full max-w-md rounded-xl border border-[#222] bg-[#0a0a0a] p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/15 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-white">Ses Kaydı Ekle</h3>
+              <h3 className="text-sm font-semibold text-foreground">Ses Kaydı Ekle</h3>
               <button
                 onClick={() => {
                   setAudioModal(null);
                   setAudioFile(null);
                   setAudioTitle("");
                 }}
-                className="text-zinc-500 hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-medium text-zinc-400">Başlık</label>
+              <label className="block text-xs font-medium text-muted-foreground">Başlık</label>
               <input
                 type="text"
                 value={audioTitle}
                 onChange={(e) => setAudioTitle(e.target.value)}
                 placeholder="Ses kaydı başlığı"
-                className="w-full rounded-lg border border-[#222] bg-[#111] px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-white"
+                className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground placeholder-zinc-600 outline-none focus:border-ring"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-medium text-zinc-400">Tür</label>
+              <label className="block text-xs font-medium text-muted-foreground">Tür</label>
               <select
                 value={audioType}
                 onChange={(e) => setAudioType(e.target.value)}
-                className="w-full rounded-lg border border-[#222] bg-[#111] px-3 py-2 text-sm text-white outline-none focus:border-white"
+                className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground outline-none focus:border-ring"
               >
                 <option value="RECORDING">Kayıt</option>
                 <option value="MUSIC">Müzik</option>
@@ -553,12 +553,12 @@ export default function ContentDetailPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-medium text-zinc-400">Dosya</label>
+              <label className="block text-xs font-medium text-muted-foreground">Dosya</label>
               <input
                 type="file"
                 accept="audio/*"
                 onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
-                className="w-full text-sm text-zinc-400 file:mr-3 file:rounded-lg file:border file:border-[#222] file:bg-[#111] file:px-3 file:py-1.5 file:text-xs file:text-zinc-300 file:cursor-pointer"
+                className="w-full text-sm text-muted-foreground file:mr-3 file:rounded-lg file:border file:border-border file:bg-muted file:px-3 file:py-1.5 file:text-xs file:text-muted-foreground file:cursor-pointer"
               />
             </div>
 
@@ -569,14 +569,14 @@ export default function ContentDetailPage() {
                   setAudioFile(null);
                   setAudioTitle("");
                 }}
-                className="rounded-lg border border-[#222] px-3 py-1.5 text-sm text-zinc-400 hover:bg-[#111]"
+                className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted"
               >
                 İptal
               </button>
               <button
                 onClick={handleUploadAudio}
                 disabled={uploadingAudio || !audioFile || !audioTitle.trim()}
-                className="flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-black hover:bg-zinc-200 disabled:opacity-50"
+                className="flex items-center gap-2 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
               >
                 {uploadingAudio && <Loader2 className="h-3 w-3 animate-spin" />}
                 Yükle

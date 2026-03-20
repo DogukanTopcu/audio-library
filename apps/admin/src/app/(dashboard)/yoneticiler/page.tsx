@@ -116,7 +116,7 @@ export default function AdminsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -124,10 +124,10 @@ export default function AdminsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-white">Yöneticiler</h1>
+        <h1 className="text-xl font-bold text-foreground">Yöneticiler</h1>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200"
+          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
           <Plus className="h-4 w-4" />
           Yeni Yönetici
@@ -138,14 +138,14 @@ export default function AdminsPage() {
       {showForm && (
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="rounded-xl border border-[#222] bg-[#0a0a0a] p-5 space-y-4"
+          className="rounded-xl border border-border bg-card p-5 space-y-4"
         >
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-white">Yeni Yönetici Ekle</h2>
+            <h2 className="text-sm font-semibold text-foreground">Yeni Yönetici Ekle</h2>
             <button
               type="button"
               onClick={() => { setShowForm(false); reset(); }}
-              className="text-zinc-500 hover:text-white"
+              className="text-muted-foreground hover:text-foreground"
             >
               <X className="h-4 w-4" />
             </button>
@@ -153,13 +153,13 @@ export default function AdminsPage() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <label className="block text-xs font-medium text-zinc-400">Ad Soyad</label>
+              <label className="block text-xs font-medium text-muted-foreground">Ad Soyad</label>
               <input
                 type="text"
                 placeholder="Ad Soyad"
                 className={cn(
-                  "w-full rounded-lg border bg-[#111] px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-white",
-                  errors.name ? "border-red-500" : "border-[#222]"
+                  "w-full rounded-lg border bg-muted px-3 py-2 text-sm text-foreground placeholder-zinc-600 outline-none focus:border-ring",
+                  errors.name ? "border-red-500" : "border-border"
                 )}
                 {...register("name")}
               />
@@ -167,13 +167,13 @@ export default function AdminsPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-medium text-zinc-400">E-posta</label>
+              <label className="block text-xs font-medium text-muted-foreground">E-posta</label>
               <input
                 type="email"
                 placeholder="admin@example.com"
                 className={cn(
-                  "w-full rounded-lg border bg-[#111] px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-white",
-                  errors.email ? "border-red-500" : "border-[#222]"
+                  "w-full rounded-lg border bg-muted px-3 py-2 text-sm text-foreground placeholder-zinc-600 outline-none focus:border-ring",
+                  errors.email ? "border-red-500" : "border-border"
                 )}
                 {...register("email")}
               />
@@ -181,13 +181,13 @@ export default function AdminsPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-medium text-zinc-400">Şifre</label>
+              <label className="block text-xs font-medium text-muted-foreground">Şifre</label>
               <input
                 type="password"
                 placeholder="En az 6 karakter"
                 className={cn(
-                  "w-full rounded-lg border bg-[#111] px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-white",
-                  errors.password ? "border-red-500" : "border-[#222]"
+                  "w-full rounded-lg border bg-muted px-3 py-2 text-sm text-foreground placeholder-zinc-600 outline-none focus:border-ring",
+                  errors.password ? "border-red-500" : "border-border"
                 )}
                 {...register("password")}
               />
@@ -195,11 +195,11 @@ export default function AdminsPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-medium text-zinc-400">Rol</label>
+              <label className="block text-xs font-medium text-muted-foreground">Rol</label>
               <select
                 className={cn(
-                  "w-full rounded-lg border bg-[#111] px-3 py-2 text-sm text-white outline-none focus:border-white",
-                  errors.role ? "border-red-500" : "border-[#222]"
+                  "w-full rounded-lg border bg-muted px-3 py-2 text-sm text-foreground outline-none focus:border-ring",
+                  errors.role ? "border-red-500" : "border-border"
                 )}
                 {...register("role")}
               >
@@ -213,7 +213,7 @@ export default function AdminsPage() {
             <button
               type="submit"
               disabled={creating}
-              className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:bg-zinc-200 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {creating && <Loader2 className="h-4 w-4 animate-spin" />}
               Oluştur
@@ -223,52 +223,52 @@ export default function AdminsPage() {
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-[#222]">
+      <div className="overflow-x-auto rounded-xl border border-border">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-[#222] bg-[#0a0a0a]">
-              <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400">Ad Soyad</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400">E-posta</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400">Rol</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400">Oluşturulma</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-zinc-400">İşlemler</th>
+            <tr className="border-b border-border bg-card">
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Ad Soyad</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">E-posta</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Rol</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Oluşturulma</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground">İşlemler</th>
             </tr>
           </thead>
           <tbody>
             {admins.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-12 text-center text-sm text-zinc-500">
+                <td colSpan={5} className="px-4 py-12 text-center text-sm text-muted-foreground">
                   Yönetici bulunamadı
                 </td>
               </tr>
             ) : (
               admins.map((a) => (
-                <tr key={a.id} className="border-b border-[#222] hover:bg-[#0a0a0a] transition-colors">
+                <tr key={a.id} className="border-b border-border hover:bg-card transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4 text-zinc-500" />
-                      <span className="text-sm font-medium text-white">{a.name}</span>
+                      <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium text-foreground">{a.name}</span>
                       {a.id === admin?.id && (
-                        <span className="rounded-full bg-[#111] border border-[#222] px-2 py-0.5 text-[10px] text-zinc-500">
+                        <span className="rounded-full bg-muted border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
                           Sen
                         </span>
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-zinc-400">{a.email}</td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">{a.email}</td>
                   <td className="px-4 py-3">
                     <span
                       className={cn(
                         "rounded-full px-2 py-0.5 text-xs font-medium",
                         a.role === "SUPERADMIN"
-                          ? "bg-purple-900/30 text-purple-400"
-                          : "bg-blue-900/30 text-blue-400"
+                          ? "bg-violet-100 text-violet-700"
+                          : "bg-sky-100 text-sky-700"
                       )}
                     >
                       {a.role === "SUPERADMIN" ? "Süper Yönetici" : "Editör"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-zinc-500">
+                  <td className="px-4 py-3 text-sm text-muted-foreground">
                     {new Date(a.createdAt).toLocaleDateString("tr-TR")}
                   </td>
                   <td className="px-4 py-3">
@@ -277,7 +277,7 @@ export default function AdminsPage() {
                         <button
                           onClick={() => handleDelete(a.id)}
                           disabled={deletingId === a.id}
-                          className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-red-900/20 hover:text-red-400 disabled:opacity-50"
+                          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
                           title="Sil"
                         >
                           {deletingId === a.id ? (

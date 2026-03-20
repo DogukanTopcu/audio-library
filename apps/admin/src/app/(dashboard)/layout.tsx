@@ -51,8 +51,8 @@ export default function DashboardLayout({
 
   if (isLoading || !admin) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black">
-        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -67,11 +67,11 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="flex min-h-screen bg-black">
+    <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 z-30 flex h-screen w-[240px] flex-col border-r border-[#222] bg-[#0a0a0a]">
-        <div className="flex h-16 items-center border-b border-[#222] px-5">
-          <span className="text-sm font-bold text-white tracking-wide">
+      <aside className="fixed left-0 top-0 z-30 flex h-screen w-[240px] flex-col border-r border-border bg-card">
+        <div className="flex h-16 items-center border-b border-border px-5">
+          <span className="text-sm font-bold text-foreground tracking-wide">
             Sesli Kütüphane
           </span>
         </div>
@@ -87,8 +87,8 @@ export default function DashboardLayout({
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-white text-black"
-                    : "text-zinc-400 hover:bg-[#111] hover:text-white"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
                 <Icon className="h-4 w-4 flex-shrink-0" />
@@ -97,11 +97,11 @@ export default function DashboardLayout({
             );
           })}
         </nav>
-        <div className="border-t border-[#222] p-3">
-          <div className="rounded-lg bg-[#111] px-3 py-2">
-            <p className="text-xs text-zinc-500">Giriş yapan</p>
-            <p className="text-sm font-medium text-white truncate">{admin.name}</p>
-            <p className="text-xs text-zinc-500">{admin.role}</p>
+        <div className="border-t border-border p-3">
+          <div className="rounded-lg bg-muted px-3 py-2">
+            <p className="text-xs text-muted-foreground">Giriş yapan</p>
+            <p className="text-sm font-medium text-foreground truncate">{admin.name}</p>
+            <p className="text-xs text-muted-foreground">{admin.role}</p>
           </div>
         </div>
       </aside>
@@ -109,15 +109,15 @@ export default function DashboardLayout({
       {/* Main area */}
       <div className="ml-[240px] flex flex-1 flex-col">
         {/* Top bar */}
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-[#222] bg-[#0a0a0a] px-6">
-          <div className="text-sm text-zinc-400">
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border bg-card px-6">
+          <div className="text-sm text-muted-foreground">
             {filteredNav.find((item) => pathname === item.href || pathname.startsWith(item.href + "/"))?.label || ""}
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-zinc-400">{admin.name}</span>
+            <span className="text-sm text-muted-foreground">{admin.name}</span>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 rounded-lg border border-[#222] px-3 py-1.5 text-xs text-zinc-400 transition-colors hover:bg-[#111] hover:text-white"
+              className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <LogOut className="h-3.5 w-3.5" />
               Çıkış
@@ -126,7 +126,7 @@ export default function DashboardLayout({
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-auto bg-black p-6">{children}</main>
+        <main className="flex-1 overflow-auto bg-background p-6">{children}</main>
       </div>
     </div>
   );

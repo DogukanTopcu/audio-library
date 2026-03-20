@@ -137,11 +137,11 @@ export default function CategoriesPage() {
 
       return (
         <div key={cat.id} style={{ marginLeft: depth * 20 }}>
-          <div className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-[#111] transition-colors group">
+          <div className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-muted transition-colors group">
             {hasChildren ? (
               <button
                 onClick={() => toggleExpand(cat.id)}
-                className="text-zinc-500 hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
               >
                 {isExpanded ? (
                   <ChevronDown className="h-4 w-4" />
@@ -153,7 +153,7 @@ export default function CategoriesPage() {
               <span className="w-4" />
             )}
 
-            <FolderTree className="h-4 w-4 text-zinc-500 flex-shrink-0" />
+            <FolderTree className="h-4 w-4 text-muted-foreground flex-shrink-0" />
 
             {isEditing ? (
               <div className="flex flex-1 items-center gap-2">
@@ -161,7 +161,7 @@ export default function CategoriesPage() {
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="flex-1 rounded border border-[#333] bg-[#0a0a0a] px-2 py-1 text-sm text-white outline-none focus:border-white"
+                  className="flex-1 rounded border border-input bg-card px-2 py-1 text-sm text-foreground outline-none focus:border-ring"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleSaveEdit();
                     if (e.key === "Escape") setEditingId(null);
@@ -171,7 +171,7 @@ export default function CategoriesPage() {
                 <button
                   onClick={handleSaveEdit}
                   disabled={savingEdit}
-                  className="rounded p-1 text-green-400 hover:bg-green-900/20"
+                  className="rounded p-1 text-emerald-600 hover:bg-emerald-50"
                 >
                   {savingEdit ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -181,28 +181,28 @@ export default function CategoriesPage() {
                 </button>
                 <button
                   onClick={() => setEditingId(null)}
-                  className="rounded p-1 text-zinc-500 hover:text-white"
+                  className="rounded p-1 text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
               </div>
             ) : (
               <>
-                <span className="flex-1 text-sm text-white">{cat.name}</span>
+                <span className="flex-1 text-sm text-foreground">{cat.name}</span>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
                   <button
                     onClick={() => {
                       setNewParentId(cat.id);
                       setShowNew(true);
                     }}
-                    className="rounded p-1 text-zinc-500 hover:text-white"
+                    className="rounded p-1 text-muted-foreground hover:text-foreground"
                     title="Alt kategori ekle"
                   >
                     <Plus className="h-3.5 w-3.5" />
                   </button>
                   <button
                     onClick={() => handleStartEdit(cat)}
-                    className="rounded p-1 text-zinc-500 hover:text-white"
+                    className="rounded p-1 text-muted-foreground hover:text-foreground"
                     title="Düzenle"
                   >
                     <Pencil className="h-3.5 w-3.5" />
@@ -210,7 +210,7 @@ export default function CategoriesPage() {
                   <button
                     onClick={() => handleDelete(cat.id)}
                     disabled={deletingId === cat.id}
-                    className="rounded p-1 text-zinc-500 hover:text-red-400 disabled:opacity-50"
+                    className="rounded p-1 text-muted-foreground hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
                     title="Sil"
                   >
                     {deletingId === cat.id ? (
@@ -225,7 +225,7 @@ export default function CategoriesPage() {
           </div>
 
           {isExpanded && hasChildren && (
-            <div className="border-l border-[#222] ml-2">
+            <div className="border-l border-border ml-2">
               {renderTree(cat.children!, depth + 1)}
             </div>
           )}
@@ -237,7 +237,7 @@ export default function CategoriesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -247,39 +247,39 @@ export default function CategoriesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-white">Kategoriler</h1>
+        <h1 className="text-xl font-bold text-foreground">Kategoriler</h1>
         <button
           onClick={() => {
             setNewParentId(null);
             setShowNew(true);
           }}
-          className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200"
+          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
           <Plus className="h-4 w-4" />
           Yeni Kategori
         </button>
       </div>
 
-      <div className="rounded-xl border border-[#222] bg-[#0a0a0a] p-5">
+      <div className="rounded-xl border border-border bg-card p-5">
         {/* New category inline form */}
         {showNew && (
-          <div className="mb-4 flex items-center gap-2 rounded-lg border border-[#222] bg-[#111] p-3">
+          <div className="mb-4 flex items-center gap-2 rounded-lg border border-border bg-muted p-3">
             <input
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="Kategori adı"
-              className="flex-1 rounded border border-[#333] bg-[#0a0a0a] px-3 py-1.5 text-sm text-white placeholder-zinc-600 outline-none focus:border-white"
+              className="flex-1 rounded border border-input bg-card px-3 py-1.5 text-sm text-foreground placeholder-zinc-600 outline-none focus:border-ring"
               onKeyDown={(e) => e.key === "Enter" && handleCreate()}
               autoFocus
             />
             {newParentId && (
-              <span className="text-xs text-zinc-500">Alt kategori</span>
+              <span className="text-xs text-muted-foreground">Alt kategori</span>
             )}
             <button
               onClick={handleCreate}
               disabled={creating || !newName.trim()}
-              className="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-black hover:bg-zinc-200 disabled:opacity-50"
+              className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {creating ? <Loader2 className="h-3 w-3 animate-spin" /> : "Ekle"}
             </button>
@@ -289,7 +289,7 @@ export default function CategoriesPage() {
                 setNewName("");
                 setNewParentId(null);
               }}
-              className="rounded p-1 text-zinc-500 hover:text-white"
+              className="rounded p-1 text-muted-foreground hover:text-foreground"
             >
               <X className="h-4 w-4" />
             </button>
@@ -297,7 +297,7 @@ export default function CategoriesPage() {
         )}
 
         {tree.length === 0 ? (
-          <p className="text-sm text-zinc-500 py-8 text-center">
+          <p className="text-sm text-muted-foreground py-8 text-center">
             Henüz kategori eklenmemiş
           </p>
         ) : (

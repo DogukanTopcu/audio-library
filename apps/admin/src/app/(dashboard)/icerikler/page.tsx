@@ -108,10 +108,10 @@ export default function ContentListPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-white">İçerikler</h1>
+        <h1 className="text-xl font-bold text-foreground">İçerikler</h1>
         <Link
           href="/icerikler/yeni"
-          className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200"
+          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
           <Plus className="h-4 w-4" />
           Yeni İçerik
@@ -121,18 +121,18 @@ export default function ContentListPage() {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
             placeholder="İçerik ara..."
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full rounded-lg border border-[#222] bg-[#0a0a0a] pl-10 pr-4 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-white"
+            className="w-full rounded-lg border border-border bg-card pl-10 pr-4 py-2 text-sm text-foreground placeholder-zinc-600 outline-none focus:border-ring"
           />
         </div>
         <select
           value={typeFilter}
           onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
-          className="rounded-lg border border-[#222] bg-[#0a0a0a] px-3 py-2 text-sm text-white outline-none focus:border-white"
+          className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-ring"
         >
           <option value="">Tüm Türler</option>
           <option value="BOOK">Kitap</option>
@@ -143,7 +143,7 @@ export default function ContentListPage() {
         <select
           value={activeFilter}
           onChange={(e) => { setActiveFilter(e.target.value); setPage(1); }}
-          className="rounded-lg border border-[#222] bg-[#0a0a0a] px-3 py-2 text-sm text-white outline-none focus:border-white"
+          className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-ring"
         >
           <option value="">Tüm Durumlar</option>
           <option value="true">Aktif</option>
@@ -154,31 +154,31 @@ export default function ContentListPage() {
       {/* Table */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-[#222]">
+        <div className="overflow-x-auto rounded-xl border border-border">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[#222] bg-[#0a0a0a]">
-                <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400">Kapak</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400">Başlık</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400">Tür</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400">Durum</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400">Oluşturulma</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-zinc-400">İşlemler</th>
+              <tr className="border-b border-border bg-card">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Kapak</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Başlık</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Tür</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Durum</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Oluşturulma</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground">İşlemler</th>
               </tr>
             </thead>
             <tbody>
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-sm text-zinc-500">
+                  <td colSpan={6} className="px-4 py-12 text-center text-sm text-muted-foreground">
                     İçerik bulunamadı
                   </td>
                 </tr>
               ) : (
                 items.map((item) => (
-                  <tr key={item.id} className="border-b border-[#222] hover:bg-[#0a0a0a] transition-colors">
+                  <tr key={item.id} className="border-b border-border hover:bg-card transition-colors">
                     <td className="px-4 py-3">
                       {item.coverImageUrl ? (
                         <img
@@ -187,16 +187,16 @@ export default function ContentListPage() {
                           className="h-10 w-8 rounded object-cover"
                         />
                       ) : (
-                        <div className="h-10 w-8 rounded bg-[#222]" />
+                        <div className="h-10 w-8 rounded bg-muted" />
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <Link href={`/icerikler/${item.id}`} className="text-sm font-medium text-white hover:underline">
+                      <Link href={`/icerikler/${item.id}`} className="text-sm font-medium text-foreground hover:underline">
                         {item.title}
                       </Link>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="rounded-full border border-[#222] bg-[#111] px-2 py-0.5 text-xs text-zinc-400">
+                      <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                         {item.type}
                       </span>
                     </td>
@@ -205,21 +205,21 @@ export default function ContentListPage() {
                         className={cn(
                           "rounded-full px-2 py-0.5 text-xs font-medium",
                           item.isActive
-                            ? "bg-green-900/30 text-green-400"
-                            : "bg-zinc-800 text-zinc-500"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-muted text-muted-foreground"
                         )}
                       >
                         {item.isActive ? "Aktif" : "Pasif"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-zinc-500">
+                    <td className="px-4 py-3 text-sm text-muted-foreground">
                       {new Date(item.createdAt).toLocaleDateString("tr-TR")}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
                         <Link
                           href={`/icerikler/${item.id}`}
-                          className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-[#111] hover:text-white"
+                          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                           title="Düzenle"
                         >
                           <Pencil className="h-4 w-4" />
@@ -227,7 +227,7 @@ export default function ContentListPage() {
                         <button
                           onClick={() => handleToggleActive(item)}
                           disabled={togglingId === item.id}
-                          className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-[#111] hover:text-white disabled:opacity-50"
+                          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
                           title={item.isActive ? "Pasif Yap" : "Aktif Yap"}
                         >
                           {togglingId === item.id ? (
@@ -242,7 +242,7 @@ export default function ContentListPage() {
                           <button
                             onClick={() => handleDelete(item.id)}
                             disabled={deletingId === item.id}
-                            className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-red-900/20 hover:text-red-400 disabled:opacity-50"
+                            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
                             title="Sil"
                           >
                             {deletingId === item.id ? (
@@ -265,21 +265,21 @@ export default function ContentListPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted-foreground">
             Sayfa {page} / {totalPages} (Toplam {data?.total ?? 0} kayıt)
           </p>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="rounded-lg border border-[#222] p-2 text-zinc-400 transition-colors hover:bg-[#111] hover:text-white disabled:opacity-30"
+              className="rounded-lg border border-border p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-30"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="rounded-lg border border-[#222] p-2 text-zinc-400 transition-colors hover:bg-[#111] hover:text-white disabled:opacity-30"
+              className="rounded-lg border border-border p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-30"
             >
               <ChevronRight className="h-4 w-4" />
             </button>

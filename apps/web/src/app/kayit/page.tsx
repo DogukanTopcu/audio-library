@@ -208,28 +208,28 @@ export default function RegistrationPage() {
   /* ------ Submitted / Waiting Screen ------ */
   if (submitted) {
     return (
-      <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-black">
+      <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-background">
         <div className="w-full max-w-lg text-center">
-          <div className="bg-[#0a0a0a] border border-[#222222] rounded-xl p-10">
+          <div className="bg-card border border-border rounded-xl p-10">
             <CheckCircle2
               className="w-20 h-20 text-[#22c55e] mx-auto mb-6"
               aria-hidden="true"
             />
-            <h1 className="text-3xl font-bold text-white mb-4">
+            <h1 className="text-3xl font-bold text-foreground mb-4">
               Başvurunuz Alındı
             </h1>
-            <p className="text-[18px] text-[#a1a1aa] mb-6 leading-relaxed">
+            <p className="text-[18px] text-muted-foreground mb-6 leading-relaxed">
               Kayıt başvurunuz başarıyla alınmıştır. Yöneticilerimiz belgenizi
               inceledikten sonra hesabınız aktifleştirilecektir. Bu süreç
               genellikle 1-3 iş günü sürmektedir.
             </p>
-            <p className="text-[18px] text-[#a1a1aa] mb-8">
+            <p className="text-[18px] text-muted-foreground mb-8">
               E-posta adresinize bir doğrulama bağlantısı gönderilmiştir.
               Lütfen e-postanızı kontrol ediniz.
             </p>
             <Link
               href="/giris"
-              className="inline-flex items-center justify-center px-8 py-4 bg-white text-black font-semibold rounded-lg text-[18px] no-underline hover:bg-[#e4e4e7] transition-colors min-h-[48px]"
+              className="inline-flex items-center justify-center px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-lg text-[18px] no-underline hover:bg-primary/90 transition-colors min-h-[48px]"
               aria-label="Giriş sayfasına dön"
             >
               Giriş Sayfasına Dön
@@ -244,10 +244,10 @@ export default function RegistrationPage() {
   const stepLabels = ["Kişisel Bilgiler", "Belge Yükleme", "Yasal Onay"];
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-black">
+    <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-background">
       <div className="w-full max-w-2xl">
-        <div className="bg-[#0a0a0a] border border-[#222222] rounded-xl p-8">
-          <h1 className="text-3xl font-bold text-center mb-2 text-white">
+        <div className="bg-card border border-border rounded-xl p-8">
+          <h1 className="text-3xl font-bold text-center mb-2 text-foreground">
             Kayıt Ol
           </h1>
 
@@ -263,10 +263,10 @@ export default function RegistrationPage() {
                     <span
                       className={`flex items-center justify-center w-10 h-10 rounded-full text-[16px] font-bold border-2 transition-colors ${
                         isActive
-                          ? "bg-white text-black border-white"
+                          ? "border-primary bg-primary text-primary-foreground"
                           : isComplete
-                            ? "bg-[#22c55e] text-white border-[#22c55e]"
-                            : "bg-transparent text-[#52525b] border-[#333333]"
+                            ? "border-[#22c55e] bg-[#22c55e] text-white"
+                            : "bg-transparent text-muted-foreground border-input"
                       }`}
                       aria-current={isActive ? "step" : undefined}
                     >
@@ -279,10 +279,10 @@ export default function RegistrationPage() {
                     <span
                       className={`text-[16px] hidden sm:inline ${
                         isActive
-                          ? "text-white font-semibold"
+                          ? "text-foreground font-semibold"
                           : isComplete
                             ? "text-[#22c55e]"
-                            : "text-[#52525b]"
+                            : "text-muted-foreground"
                       }`}
                     >
                       {label}
@@ -290,7 +290,7 @@ export default function RegistrationPage() {
                     {i < stepLabels.length - 1 && (
                       <span
                         className={`w-8 h-px mx-1 ${
-                          isComplete ? "bg-[#22c55e]" : "bg-[#333333]"
+                          isComplete ? "bg-[#22c55e]" : "bg-border"
                         }`}
                         aria-hidden="true"
                       />
@@ -309,7 +309,7 @@ export default function RegistrationPage() {
               className="space-y-5"
             >
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-[18px] text-white">
+                <Label htmlFor="name" className="text-[18px] text-foreground">
                   Ad Soyad
                 </Label>
                 <Input
@@ -319,7 +319,7 @@ export default function RegistrationPage() {
                   aria-describedby={errors.name ? "name-error" : undefined}
                   aria-invalid={!!errors.name}
                   placeholder="Ad Soyad"
-                  className="h-[48px] text-[18px] bg-black border-[#222222] text-white placeholder:text-[#52525b] focus-visible:border-white focus-visible:ring-white/30"
+                  className="h-[48px] text-[18px] bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/30"
                   {...register("name")}
                 />
                 {errors.name && (
@@ -330,7 +330,7 @@ export default function RegistrationPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-[18px] text-white">
+                <Label htmlFor="email" className="text-[18px] text-foreground">
                   E-posta Adresi
                 </Label>
                 <Input
@@ -340,7 +340,7 @@ export default function RegistrationPage() {
                   aria-describedby={errors.email ? "email-error" : undefined}
                   aria-invalid={!!errors.email}
                   placeholder="ornek@email.com"
-                  className="h-[48px] text-[18px] bg-black border-[#222222] text-white placeholder:text-[#52525b] focus-visible:border-white focus-visible:ring-white/30"
+                  className="h-[48px] text-[18px] bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/30"
                   {...register("email")}
                 />
                 {errors.email && (
@@ -352,7 +352,7 @@ export default function RegistrationPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-[18px] text-white">
+                  <Label htmlFor="password" className="text-[18px] text-foreground">
                     Şifre
                   </Label>
                   <div className="relative">
@@ -365,14 +365,14 @@ export default function RegistrationPage() {
                       }
                       aria-invalid={!!errors.password}
                       placeholder="En az 8 karakter"
-                      className="h-[48px] text-[18px] bg-black border-[#222222] text-white placeholder:text-[#52525b] pr-14 focus-visible:border-white focus-visible:ring-white/30"
+                      className="h-[48px] text-[18px] bg-background border-border text-foreground placeholder:text-muted-foreground pr-14 focus-visible:border-ring focus-visible:ring-ring/30"
                       {...register("password")}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#a1a1aa] hover:text-white transition-colors p-1 min-h-[48px] flex items-center"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1 min-h-[48px] flex items-center"
                     >
                       {showPassword ? (
                         <EyeOff className="w-5 h-5" aria-hidden="true" />
@@ -397,7 +397,7 @@ export default function RegistrationPage() {
                               backgroundColor:
                                 level <= passwordStrength.score
                                   ? passwordStrength.color
-                                  : "#333333",
+                                  : "var(--muted)",
                             }}
                           />
                         ))}
@@ -415,7 +415,7 @@ export default function RegistrationPage() {
                 <div className="space-y-2">
                   <Label
                     htmlFor="password_confirm"
-                    className="text-[18px] text-white"
+                    className="text-[18px] text-foreground"
                   >
                     Şifre Tekrar
                   </Label>
@@ -431,7 +431,7 @@ export default function RegistrationPage() {
                       }
                       aria-invalid={!!errors.password_confirm}
                       placeholder="Şifrenizi tekrar giriniz"
-                      className="h-[48px] text-[18px] bg-black border-[#222222] text-white placeholder:text-[#52525b] pr-14 focus-visible:border-white focus-visible:ring-white/30"
+                      className="h-[48px] text-[18px] bg-background border-border text-foreground placeholder:text-muted-foreground pr-14 focus-visible:border-ring focus-visible:ring-ring/30"
                       {...register("password_confirm")}
                     />
                     <button
@@ -442,7 +442,7 @@ export default function RegistrationPage() {
                       aria-label={
                         showPasswordConfirm ? "Şifreyi gizle" : "Şifreyi göster"
                       }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#a1a1aa] hover:text-white transition-colors p-1 min-h-[48px] flex items-center"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1 min-h-[48px] flex items-center"
                     >
                       {showPasswordConfirm ? (
                         <EyeOff className="w-5 h-5" aria-hidden="true" />
@@ -465,7 +465,7 @@ export default function RegistrationPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="phone_number" className="text-[18px] text-white">
+                  <Label htmlFor="phone_number" className="text-[18px] text-foreground">
                     Telefon Numarası
                   </Label>
                   <Input
@@ -477,7 +477,7 @@ export default function RegistrationPage() {
                     }
                     aria-invalid={!!errors.phone_number}
                     placeholder="05XX XXX XX XX"
-                    className="h-[48px] text-[18px] bg-black border-[#222222] text-white placeholder:text-[#52525b] focus-visible:border-white focus-visible:ring-white/30"
+                    className="h-[48px] text-[18px] bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/30"
                     {...register("phone_number")}
                   />
                   {errors.phone_number && (
@@ -492,7 +492,7 @@ export default function RegistrationPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="tc_id" className="text-[18px] text-white">
+                  <Label htmlFor="tc_id" className="text-[18px] text-foreground">
                     TC Kimlik No
                   </Label>
                   <Input
@@ -504,7 +504,7 @@ export default function RegistrationPage() {
                     aria-describedby={errors.tc_id ? "tc-error" : undefined}
                     aria-invalid={!!errors.tc_id}
                     placeholder="XXXXXXXXXXX"
-                    className="h-[48px] text-[18px] bg-black border-[#222222] text-white placeholder:text-[#52525b] focus-visible:border-white focus-visible:ring-white/30"
+                    className="h-[48px] text-[18px] bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/30"
                     {...register("tc_id")}
                   />
                   {errors.tc_id && (
@@ -518,7 +518,7 @@ export default function RegistrationPage() {
               <Button
                 type="submit"
                 aria-label="Sonraki adıma geç"
-                className="w-full h-[52px] text-[18px] font-semibold bg-white text-black hover:bg-[#e4e4e7] rounded-lg mt-4"
+                className="w-full h-[52px] text-[18px] font-semibold bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg mt-4"
               >
                 <span className="flex items-center gap-2">
                   Devam Et
@@ -526,11 +526,11 @@ export default function RegistrationPage() {
                 </span>
               </Button>
 
-              <p className="text-center text-[18px] text-[#a1a1aa]">
+              <p className="text-center text-[18px] text-muted-foreground">
                 Zaten hesabınız var mı?{" "}
                 <Link
                   href="/giris"
-                  className="text-white font-semibold hover:underline"
+                  className="text-foreground font-semibold hover:underline"
                   aria-label="Giriş sayfasına git"
                 >
                   Giriş yapın
@@ -542,11 +542,11 @@ export default function RegistrationPage() {
           {/* =================== STEP 2 =================== */}
           {currentStep === 2 && (
             <div className="space-y-6">
-              <div className="bg-black border border-[#222222] rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-white mb-3">
+              <div className="bg-background border border-border rounded-lg p-6">
+                <h2 className="text-xl font-semibold text-foreground mb-3">
                   Neden Belge Gerekli?
                 </h2>
-                <p className="text-[18px] text-[#a1a1aa] leading-relaxed">
+                <p className="text-[18px] text-muted-foreground leading-relaxed">
                   Platformumuz, görme engelli bireylere özel olarak hazırlanmış
                   sesli içerikler sunmaktadır. Hizmetlerimizin doğru
                   kişilere ulaşması için engel durumunuzu belgeleyen resmi bir
@@ -563,8 +563,8 @@ export default function RegistrationPage() {
                   aria-label="Belge yüklemek için tıklayın veya sürükleyip bırakın"
                   className={`border-2 border-dashed rounded-xl p-10 text-center transition-colors cursor-pointer ${
                     isDragging
-                      ? "border-white bg-[#111111]"
-                      : "border-[#333333] hover:border-[#555555]"
+                      ? "border-ring bg-accent"
+                      : "border-input hover:border-ring"
                   }`}
                   onClick={() => fileInputRef.current?.click()}
                   onKeyDown={(e) => {
@@ -589,15 +589,15 @@ export default function RegistrationPage() {
                   {isUploading ? (
                     <div className="space-y-4">
                       <Loader2
-                        className="w-12 h-12 text-white mx-auto animate-spin"
+                        className="w-12 h-12 text-foreground mx-auto animate-spin"
                         aria-hidden="true"
                       />
-                      <p className="text-[18px] text-white">
+                      <p className="text-[18px] text-foreground">
                         Yükleniyor... %{uploadProgress}
                       </p>
-                      <div className="w-full h-2 bg-[#222222] rounded-full overflow-hidden">
+                      <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
                         <div
-                          className="h-full bg-white rounded-full transition-all duration-300"
+                          className="h-full rounded-full bg-primary transition-all duration-300"
                           style={{ width: `${uploadProgress}%` }}
                           role="progressbar"
                           aria-valuenow={uploadProgress}
@@ -610,16 +610,16 @@ export default function RegistrationPage() {
                   ) : (
                     <>
                       <Upload
-                        className="w-12 h-12 text-[#a1a1aa] mx-auto mb-4"
+                        className="w-12 h-12 text-muted-foreground mx-auto mb-4"
                         aria-hidden="true"
                       />
-                      <p className="text-[18px] text-white mb-2">
+                      <p className="text-[18px] text-foreground mb-2">
                         Belgenizi sürükleyip bırakın
                       </p>
-                      <p className="text-[16px] text-[#a1a1aa] mb-4">
+                      <p className="text-[16px] text-muted-foreground mb-4">
                         veya dosya seçmek için tıklayın
                       </p>
-                      <p className="text-[14px] text-[#52525b]">
+                      <p className="text-[14px] text-muted-foreground">
                         PDF, JPG veya PNG formatları kabul edilmektedir
                       </p>
                     </>
@@ -632,7 +632,7 @@ export default function RegistrationPage() {
                     aria-hidden="true"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[18px] text-white font-medium truncate">
+                    <p className="text-[18px] text-foreground font-medium truncate">
                       {uploadedFileName}
                     </p>
                     <p className="text-[16px] text-[#22c55e]">
@@ -651,7 +651,7 @@ export default function RegistrationPage() {
                   type="button"
                   onClick={() => setCurrentStep(1)}
                   aria-label="Önceki adıma dön"
-                  className="flex-1 h-[52px] text-[18px] font-semibold bg-transparent border border-[#333333] text-white hover:bg-[#111111] rounded-lg"
+                  className="flex-1 h-[52px] text-[18px] font-semibold bg-transparent border border-input text-foreground hover:bg-muted rounded-lg"
                 >
                   <span className="flex items-center gap-2">
                     <ArrowLeft className="w-5 h-5" aria-hidden="true" />
@@ -663,7 +663,7 @@ export default function RegistrationPage() {
                   onClick={() => setCurrentStep(3)}
                   disabled={!documentKey}
                   aria-label="Sonraki adıma geç"
-                  className="flex-1 h-[52px] text-[18px] font-semibold bg-white text-black hover:bg-[#e4e4e7] rounded-lg disabled:opacity-40"
+                  className="flex-1 h-[52px] text-[18px] font-semibold bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg disabled:opacity-40"
                 >
                   <span className="flex items-center gap-2">
                     Devam Et
@@ -679,11 +679,11 @@ export default function RegistrationPage() {
             <div className="space-y-6">
               {/* KVKK */}
               <div className="space-y-3">
-                <h2 className="text-xl font-semibold text-white">
+                <h2 className="text-xl font-semibold text-foreground">
                   KVKK Aydınlatma Metni
                 </h2>
                 <div
-                  className="bg-black border border-[#222222] rounded-lg p-4 h-48 overflow-y-auto text-[16px] text-[#a1a1aa] leading-relaxed"
+                  className="bg-background border border-border rounded-lg p-4 h-48 overflow-y-auto text-[16px] text-muted-foreground leading-relaxed"
                   tabIndex={0}
                   role="document"
                   aria-label="KVKK aydınlatma metni"
@@ -722,10 +722,10 @@ export default function RegistrationPage() {
                     type="checkbox"
                     checked={kvkkConsent}
                     onChange={(e) => setKvkkConsent(e.target.checked)}
-                    className="w-6 h-6 mt-0.5 rounded border-[#333333] bg-black accent-white flex-shrink-0"
+                    className="w-6 h-6 mt-0.5 rounded border-input bg-background accent-primary flex-shrink-0"
                     aria-label="KVKK aydınlatma metnini okudum ve kabul ediyorum"
                   />
-                  <span className="text-[18px] text-white">
+                  <span className="text-[18px] text-foreground">
                     KVKK Aydınlatma Metnini okudum ve kabul ediyorum
                   </span>
                 </label>
@@ -733,11 +733,11 @@ export default function RegistrationPage() {
 
               {/* Terms of Service */}
               <div className="space-y-3">
-                <h2 className="text-xl font-semibold text-white">
+                <h2 className="text-xl font-semibold text-foreground">
                   Kullanım Koşulları
                 </h2>
                 <div
-                  className="bg-black border border-[#222222] rounded-lg p-4 h-48 overflow-y-auto text-[16px] text-[#a1a1aa] leading-relaxed"
+                  className="bg-background border border-border rounded-lg p-4 h-48 overflow-y-auto text-[16px] text-muted-foreground leading-relaxed"
                   tabIndex={0}
                   role="document"
                   aria-label="Kullanım koşulları metni"
@@ -775,10 +775,10 @@ export default function RegistrationPage() {
                     type="checkbox"
                     checked={tosConsent}
                     onChange={(e) => setTosConsent(e.target.checked)}
-                    className="w-6 h-6 mt-0.5 rounded border-[#333333] bg-black accent-white flex-shrink-0"
+                    className="w-6 h-6 mt-0.5 rounded border-input bg-background accent-primary flex-shrink-0"
                     aria-label="Kullanım koşullarını okudum ve kabul ediyorum"
                   />
-                  <span className="text-[18px] text-white">
+                  <span className="text-[18px] text-foreground">
                     Kullanım Koşullarını okudum ve kabul ediyorum
                   </span>
                 </label>
@@ -789,7 +789,7 @@ export default function RegistrationPage() {
                   type="button"
                   onClick={() => setCurrentStep(2)}
                   aria-label="Önceki adıma dön"
-                  className="flex-1 h-[52px] text-[18px] font-semibold bg-transparent border border-[#333333] text-white hover:bg-[#111111] rounded-lg"
+                  className="flex-1 h-[52px] text-[18px] font-semibold bg-transparent border border-input text-foreground hover:bg-muted rounded-lg"
                 >
                   <span className="flex items-center gap-2">
                     <ArrowLeft className="w-5 h-5" aria-hidden="true" />
@@ -801,7 +801,7 @@ export default function RegistrationPage() {
                   onClick={handleRegistration}
                   disabled={!kvkkConsent || !tosConsent || isSubmitting}
                   aria-label="Kayıt ol"
-                  className="flex-1 h-[52px] text-[18px] font-semibold bg-white text-black hover:bg-[#e4e4e7] rounded-lg disabled:opacity-40"
+                  className="flex-1 h-[52px] text-[18px] font-semibold bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg disabled:opacity-40"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">

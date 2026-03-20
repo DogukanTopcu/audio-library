@@ -57,10 +57,10 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-black">
+    <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-background">
       <div className="w-full max-w-md">
-        <div className="bg-[#0a0a0a] border border-[#222222] rounded-xl p-8">
-          <h1 className="text-3xl font-bold text-center mb-8 text-white">
+        <div className="bg-card border border-border rounded-xl p-8">
+          <h1 className="text-3xl font-bold text-center mb-8 text-foreground">
             Giriş Yap
           </h1>
 
@@ -68,7 +68,7 @@ export default function LoginPage() {
             <div className="space-y-2">
               <Label
                 htmlFor="email"
-                className="text-[18px] text-white font-medium"
+                className="text-[18px] text-foreground font-medium"
               >
                 E-posta Adresi
               </Label>
@@ -80,7 +80,7 @@ export default function LoginPage() {
                 aria-describedby={errors.email ? "email-error" : undefined}
                 aria-invalid={!!errors.email}
                 placeholder="ornek@email.com"
-                className="h-[48px] text-[18px] bg-black border-[#222222] text-white placeholder:text-[#52525b] focus-visible:border-white focus-visible:ring-white/30"
+                className="h-[48px] text-[18px] bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/30"
                 {...register("email")}
               />
               {errors.email && (
@@ -97,7 +97,7 @@ export default function LoginPage() {
             <div className="space-y-2">
               <Label
                 htmlFor="password"
-                className="text-[18px] text-white font-medium"
+                className="text-[18px] text-foreground font-medium"
               >
                 Şifre
               </Label>
@@ -110,14 +110,14 @@ export default function LoginPage() {
                   aria-describedby={errors.password ? "password-error" : undefined}
                   aria-invalid={!!errors.password}
                   placeholder="Şifrenizi giriniz"
-                  className="h-[48px] text-[18px] bg-black border-[#222222] text-white placeholder:text-[#52525b] pr-14 focus-visible:border-white focus-visible:ring-white/30"
+                  className="h-[48px] text-[18px] bg-background border-border text-foreground placeholder:text-muted-foreground pr-14 focus-visible:border-ring focus-visible:ring-ring/30"
                   {...register("password")}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#a1a1aa] hover:text-white transition-colors p-1 min-h-[48px] flex items-center"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1 min-h-[48px] flex items-center"
                 >
                   {showPassword ? (
                     <EyeOff className="w-6 h-6" aria-hidden="true" />
@@ -141,12 +141,12 @@ export default function LoginPage() {
               type="submit"
               disabled={isSubmitting}
               aria-label="Giriş yap"
-              className="w-full h-[52px] text-[18px] font-semibold bg-white text-black hover:bg-[#e4e4e7] rounded-lg"
+              className="w-full h-[52px] text-[18px] font-semibold bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg"
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-2">
                   <span
-                    className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin"
+                    className="h-5 w-5 animate-spin rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground"
                     aria-hidden="true"
                   />
                   Giriş yapılıyor...
@@ -160,11 +160,11 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <p className="text-center mt-8 text-[18px] text-[#a1a1aa]">
+          <p className="text-center mt-8 text-[18px] text-muted-foreground">
             Hesabınız yok mu?{" "}
             <Link
               href="/kayit"
-              className="text-white font-semibold hover:underline"
+              className="text-foreground font-semibold hover:underline"
               aria-label="Kayıt ol sayfasına git"
             >
               Kayıt olun

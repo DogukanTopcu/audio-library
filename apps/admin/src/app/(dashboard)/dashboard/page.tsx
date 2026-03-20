@@ -77,21 +77,21 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   const statCards = [
-    { label: "Toplam Kullanıcı", value: stats?.totalUsers ?? 0, icon: Users, color: "text-blue-400" },
-    { label: "Bekleyen Doğrulama", value: stats?.pendingVerifications ?? 0, icon: Clock, color: "text-yellow-400" },
-    { label: "Toplam İçerik", value: stats?.totalContent ?? 0, icon: BookOpen, color: "text-green-400" },
-    { label: "Toplam Ses Kaydı", value: stats?.totalAudioRecords ?? 0, icon: AudioLines, color: "text-purple-400" },
+    { label: "Toplam Kullanıcı", value: stats?.totalUsers ?? 0, icon: Users, color: "text-blue-600" },
+    { label: "Bekleyen Doğrulama", value: stats?.pendingVerifications ?? 0, icon: Clock, color: "text-amber-600" },
+    { label: "Toplam İçerik", value: stats?.totalContent ?? 0, icon: BookOpen, color: "text-emerald-600" },
+    { label: "Toplam Ses Kaydı", value: stats?.totalAudioRecords ?? 0, icon: AudioLines, color: "text-violet-600" },
   ];
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-white">Dashboard</h1>
+      <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -100,13 +100,13 @@ export default function DashboardPage() {
           return (
             <div
               key={card.label}
-              className="rounded-xl border border-[#222] bg-[#0a0a0a] p-5"
+              className="rounded-xl border border-border bg-card p-5"
             >
               <div className="flex items-center justify-between">
-                <p className="text-sm text-zinc-400">{card.label}</p>
+                <p className="text-sm text-muted-foreground">{card.label}</p>
                 <Icon className={cn("h-5 w-5", card.color)} />
               </div>
-              <p className="mt-2 text-2xl font-bold text-white">{card.value}</p>
+              <p className="mt-2 text-2xl font-bold text-foreground">{card.value}</p>
             </div>
           );
         })}
@@ -115,22 +115,22 @@ export default function DashboardPage() {
       {/* Two panels */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Son Kayıtlar */}
-        <div className="rounded-xl border border-[#222] bg-[#0a0a0a] p-5">
-          <h2 className="mb-4 text-sm font-semibold text-white">Son Kayıtlar</h2>
+        <div className="rounded-xl border border-border bg-card p-5">
+          <h2 className="mb-4 text-sm font-semibold text-foreground">Son Kayıtlar</h2>
           {recentUsers.length === 0 ? (
-            <p className="text-sm text-zinc-500">Henüz kayıt yok</p>
+            <p className="text-sm text-muted-foreground">Henüz kayıt yok</p>
           ) : (
             <div className="space-y-3">
               {recentUsers.map((user) => (
                 <div
                   key={user.id}
-                  className="flex items-center justify-between rounded-lg bg-[#111] px-4 py-3"
+                  className="flex items-center justify-between rounded-lg bg-muted px-4 py-3"
                 >
                   <div>
-                    <p className="text-sm font-medium text-white">{user.name}</p>
-                    <p className="text-xs text-zinc-500">{user.email}</p>
+                    <p className="text-sm font-medium text-foreground">{user.name}</p>
+                    <p className="text-xs text-muted-foreground">{user.email}</p>
                   </div>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-muted-foreground">
                     {new Date(user.createdAt).toLocaleDateString("tr-TR")}
                   </p>
                 </div>
@@ -140,25 +140,25 @@ export default function DashboardPage() {
         </div>
 
         {/* Bekleyen Doğrulama */}
-        <div className="rounded-xl border border-[#222] bg-[#0a0a0a] p-5">
-          <h2 className="mb-4 text-sm font-semibold text-white">Bekleyen Doğrulama</h2>
+        <div className="rounded-xl border border-border bg-card p-5">
+          <h2 className="mb-4 text-sm font-semibold text-foreground">Bekleyen Doğrulama</h2>
           {pendingUsers.length === 0 ? (
-            <p className="text-sm text-zinc-500">Bekleyen doğrulama yok</p>
+            <p className="text-sm text-muted-foreground">Bekleyen doğrulama yok</p>
           ) : (
             <div className="space-y-3">
               {pendingUsers.map((user) => (
                 <div
                   key={user.id}
-                  className="flex items-center justify-between rounded-lg bg-[#111] px-4 py-3"
+                  className="flex items-center justify-between rounded-lg bg-muted px-4 py-3"
                 >
                   <div>
-                    <p className="text-sm font-medium text-white">{user.name}</p>
-                    <p className="text-xs text-zinc-500">{user.email}</p>
+                    <p className="text-sm font-medium text-foreground">{user.name}</p>
+                    <p className="text-xs text-muted-foreground">{user.email}</p>
                   </div>
                   <button
                     onClick={() => handleVerify(user.id)}
                     disabled={verifyingId === user.id}
-                    className="flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
+                    className="flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-green-700 disabled:opacity-50"
                   >
                     {verifyingId === user.id ? (
                       <Loader2 className="h-3 w-3 animate-spin" />
