@@ -1,11 +1,9 @@
 {
   "extends": "@repo/typescript-config/nestjs.json",
   "compilerOptions": {
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "resolvePackageJsonExports": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
     "esModuleInterop": true,
-    "isolatedModules": true,
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -16,9 +14,9 @@
     "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
-      "@repo/db": ["../../packages/db/src/index.ts"]
+      "@repo/db": ["../../packages/db/src/index.ts"],
+      "@repo/db/schema": ["../../packages/db/src/schema/index.ts"]
     },
-    "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,

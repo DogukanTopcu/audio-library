@@ -2,8 +2,8 @@ import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { eq } from 'drizzle-orm';
 import { DRIZZLE } from '../drizzle/drizzle.module.js';
-import * as schema from '@repo/db/schema';
-import { categories } from '@repo/db/schema';
+import * as schema from '../../../../packages/db/src/schema/index.js';
+import { categories } from '../../../../packages/db/src/schema/index.js';
 import { CreateCategoryDto } from './dto/create-category.dto.js';
 import { UpdateCategoryDto } from './dto/update-category.dto.js';
 

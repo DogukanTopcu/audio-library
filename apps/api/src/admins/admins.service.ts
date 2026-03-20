@@ -7,8 +7,8 @@ import {
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { eq } from 'drizzle-orm';
 import { DRIZZLE } from '../drizzle/drizzle.module.js';
-import * as schema from '@repo/db/schema';
-import { admins } from '@repo/db/schema';
+import * as schema from '../../../../packages/db/src/schema/index.js';
+import { admins } from '../../../../packages/db/src/schema/index.js';
 import { CreateAdminDto } from './dto/create-admin.dto.js';
 import * as bcrypt from 'bcryptjs';
 

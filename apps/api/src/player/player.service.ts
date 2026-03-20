@@ -3,7 +3,7 @@ import { DRIZZLE } from '../drizzle/drizzle.module.js';
 import { GCP_STORAGE } from '../gcp/gcp.module.js';
 import { ConfigService } from '@nestjs/config';
 import { Storage } from '@google-cloud/storage';
-import * as schema from '@repo/db/schema';
+import * as schema from '../../../../packages/db/src/schema/index.js';
 import { eq, and } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 

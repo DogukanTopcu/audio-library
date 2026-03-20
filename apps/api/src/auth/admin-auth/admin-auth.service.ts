@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { DRIZZLE } from '../../drizzle/drizzle.module.js';
-import * as schema from '@repo/db/schema';
+import * as schema from '../../../../../packages/db/src/schema/index.js';
 import { eq } from 'drizzle-orm';
 import * as bcrypt from 'bcryptjs';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';

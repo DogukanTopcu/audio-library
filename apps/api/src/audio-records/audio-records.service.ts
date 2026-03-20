@@ -2,8 +2,8 @@ import { Injectable, Inject, NotFoundException, Logger } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { eq, asc } from 'drizzle-orm';
 import { DRIZZLE } from '../drizzle/drizzle.module.js';
-import * as schema from '@repo/db/schema';
-import { audioRecords } from '@repo/db/schema';
+import * as schema from '../../../../packages/db/src/schema/index.js';
+import { audioRecords } from '../../../../packages/db/src/schema/index.js';
 import { CreateAudioRecordDto } from './dto/create-audio-record.dto.js';
 import { UpdateAudioRecordDto } from './dto/update-audio-record.dto.js';
 

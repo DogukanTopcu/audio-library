@@ -18,16 +18,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr" className={`h-full antialiased ${inter.variable} font-sans`}>
-      <body className="min-h-full flex flex-col bg-black text-white">
+      <body className="min-h-full flex flex-col bg-background text-foreground">
         <AdminAuthProvider>
           {children}
           <Toaster
             position="top-right"
             toastOptions={{
               style: {
-                background: "#0a0a0a",
-                border: "1px solid #222222",
-                color: "#ffffff",
+                background: "#ffffff",
+                border: "1px solid #e4e4e7",
+                color: "#09090b",
               },
             }}
           />

@@ -9,6 +9,7 @@
     "check-types": "turbo check-types",
     "db:generate": "turbo db:generate",
     "db:migrate": "turbo db:migrate",
+    "db:seed": "turbo db:seed",
     "db:studio": "turbo db:studio"
   },
   "devDependencies": {
