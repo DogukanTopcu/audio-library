@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Compass, BarChart3, User, LogOut, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
+import { NarratorToggle } from "@/components/narrator-toggle";
+import { NarratorHoverProvider } from "@/components/narrator-hover-provider";
 
 const navItems = [
   { href: "/kesfet", label: "Kesfet sayfasina git", text: "Kesfet", icon: Compass },
@@ -57,6 +59,7 @@ export default function ProtectedLayout({
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <NarratorHoverProvider />
       {/* Top Navigation */}
       <header className="sticky top-0 z-50 border-b border-border bg-card">
         <nav
@@ -94,6 +97,8 @@ export default function ProtectedLayout({
                 </Link>
               );
             })}
+
+            <NarratorToggle />
 
             <Button
               onClick={handleLogout}
