@@ -16,6 +16,8 @@ import {
   LogOut,
   Loader2,
 } from "lucide-react";
+import { NarratorToggle } from "@/components/narrator-toggle";
+import { NarratorHoverProvider } from "@/components/narrator-hover-provider";
 
 interface NavItem {
   label: string;
@@ -68,6 +70,7 @@ export default function DashboardLayout({
 
   return (
     <div className="flex min-h-screen bg-background">
+      <NarratorHoverProvider />
       {/* Sidebar */}
       <aside className="fixed left-0 top-0 z-30 flex h-screen w-[240px] flex-col border-r border-border bg-card">
         <div className="flex h-16 items-center border-b border-border px-5">
@@ -115,6 +118,7 @@ export default function DashboardLayout({
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground">{admin.name}</span>
+            <NarratorToggle />
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"

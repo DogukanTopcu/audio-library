@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/lib/auth-context";
+import { NarratorProvider } from "@/lib/narrator-context";
 import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
@@ -21,20 +22,22 @@ export default function RootLayout({
   return (
     <html lang="tr" className={cn("h-full antialiased", inter.variable, "font-sans")}>
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <AuthProvider>
-          {children}
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              style: {
-                background: "#ffffff",
-                border: "1px solid #e4e4e7",
-                color: "#09090b",
-                fontSize: "16px",
-              },
-            }}
-          />
-        </AuthProvider>
+        <NarratorProvider>
+          <AuthProvider>
+            {children}
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                style: {
+                  background: "#ffffff",
+                  border: "1px solid #e4e4e7",
+                  color: "#09090b",
+                  fontSize: "16px",
+                },
+              }}
+            />
+          </AuthProvider>
+        </NarratorProvider>
       </body>
     </html>
   );
