@@ -25,10 +25,10 @@ interface ContentMeta {
 
 const contentTypes = [
   { key: "", label: "TUMU" },
-  { key: "DERS_KITABI", label: "DERS KITABI" },
-  { key: "ROMAN", label: "ROMAN" },
-  { key: "DENEME", label: "DENEME" },
-  { key: "SORU_BANKASI", label: "SORU BANKASI" },
+  { key: "TEXTBOOK", label: "DERS KITABI" },
+  { key: "NOVEL", label: "ROMAN" },
+  { key: "PRACTICE_TEST", label: "DENEME" },
+  { key: "QUESTION_BANK", label: "SORU BANKASI" },
 ];
 
 const typeLabels: Record<string, string> = {
