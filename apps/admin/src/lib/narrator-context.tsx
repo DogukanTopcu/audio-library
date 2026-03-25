@@ -25,6 +25,18 @@ export function NarratorProvider({ children }: { children: React.ReactNode }) {
       utterance.rate = rate;
       utterance.lang = "tr-TR";
 
+      // Find and set Turkish voice explicitly
+      const voices = window.speechSynthesis.getVoices();
+      const turkishVoice = voices.find(
+        (voice) => voice.lang.startsWith("tr") || voice.lang.startsWith("tr-TR")
+      );
+      console.log(turkishVoice);
+      if (turkishVoice) {
+        utterance.voice = turkishVoice;
+      } else {
+        console.warn("Turkish voice not available. Using default voice.");
+      }
+
       window.speechSynthesis.speak(utterance);
     },
     [isEnabled]
