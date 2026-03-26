@@ -1,0 +1,373 @@
+## Sample Data Structure
+
+After running `npm run db:seed`, the database will contain:
+
+### Users
+
+```
+1. Admin Account
+   Email: admin@ozanbayir.com
+   Password: Admin123!
+   Role: SUPERADMIN
+   Status: SUPERADMIN
+
+2. Regular User
+   Email: kullanici@ozanbayir.com
+   Password: Kullanici123!
+   Name: Test Kullanıcı
+   TC ID: 12345678901
+   Status: ACTIVE
+   Has: userAgentProfile, userProgress records, userQuestionAnswers records
+```
+
+### Content (Books)
+
+```
+1. Matematik 9 - Cebir Temelleri
+   Type: TEXTBOOK
+   Author: Öğretmen Ayşe Yılmaz
+   Publisher: Eğitim Yayınları
+   Status: ACTIVE
+   Description: 9. sınıf matematik dersi - Cebir ve denklemler konularını kapsar
+
+2. Fizik 10 - Hareket ve Kuvvet
+   Type: TEXTBOOK
+   Author: Prof. Mehmet Demir
+   Publisher: Bilim Yayınları
+   Status: ACTIVE
+   Description: 10. sınıf fizik dersi - Klasik mekanik ve hareket kanunları
+
+3. İngilizce 11 - İşletme Dili
+   Type: TEXTBOOK
+   Author: İngilizce Bölümü
+   Publisher: Dil Yayınları
+   Status: ACTIVE
+   Description: 11. sınıf İngilizce - İşletme ve ticari kontekstler
+```
+
+### Chapter Hierarchy
+
+```
+Matematik 9 - Cebir Temelleri
+├── Bölüm 1: Temel Sayı Kavramları (Main Chapter)
+│   ├── Audio: Doğal Sayılara Giriş (TOPIC_INTRO, 480s)
+│   ├── Audio: Tam Sayılar (TOPIC_INTRO, 420s)
+│   └── 1.1 İşlemler ve Özellikleri (Sub-chapter)
+│       └── Audio: Toplama İşlemi (TOPIC_INTRO, 360s)
+└── Bölüm 2: Denklemler (Main Chapter)
+    └── Audio: Denklem Kavramı (TOPIC_INTRO, 500s)
+
+Fizik 10 - Hareket ve Kuvvet
+├── Bölüm 1: Newton Kanunları
+│   ├── Audio: Newton'un Birinci Kanunu (TOPIC_INTRO, 540s)
+│   └── Audio: Newton'un İkinci Kanunu (TOPIC_INTRO, 600s)
+└── Bölüm 2: Enerji
+    └── Audio: Kinetik Enerji (TOPIC_INTRO, 480s)
+
+İngilizce 11 - İşletme Dili
+└── Bölüm 1: Mesleki Sohbet
+    ├── Audio: Merhabalaşma (STORY_PASSAGE, 300s)
+    └── Audio: İş Görüşmesi Örneği (STORY_PASSAGE, 720s)
+```
+
+### Audio Records
+
+Each chapter has multiple audio records with:
+- `title`: Descriptive name
+- `type`: TOPIC_INTRO, EXPLANATION, STORY_PASSAGE, etc.
+- `bucketKey`: GCP bucket path
+- `durationSeconds`: Duration in seconds
+- `transcript`: Full transcript text
+
+Example audio paths:
+```
+audio/math9/chapter1/natural-numbers-intro.mp3
+audio/math9/chapter1/integers.mp3
+audio/math9/chapter1.1/addition.mp3
+audio/physics10/chapter1/newton-first-law.mp3
+audio/english11/chapter1/greetings.mp3
+```
+
+### Questions & Choices
+
+For each audio record, question choices are created:
+```
+Question 1: [audioRecordId]
+├── Choice 0: "Seçenek A" → audio/questions/choices/{id}-0.mp3
+├── Choice 1: "Seçenek B" → audio/questions/choices/{id}-1.mp3
+├── Choice 2: "Seçenek C" → audio/questions/choices/{id}-2.mp3 (CORRECT)
+└── Choice 3: "Seçenek D" → audio/questions/choices/{id}-3.mp3
+
+Difficulty: EASY/MEDIUM/HARD (rotating)
+Topics: [chapter-title-lowercase]
+```
+
+### User Progress Data
+
+Sample progress data for test user:
+
+```
+Completed Audio Records: ~4
+   - Progressively marked as completed
+   - positionSeconds: varies
+
+Listened But Incomplete: ~4
+   - Position tracked (0-100%)
+   - Last updated timestamps
+
+Question Attempts: ~6
+   - Mixed correct (60%) and incorrect (40%)
+   - Attempt counts: 1-3
+   - Time spent: 30-180 seconds each
+
+Sample User Answer:
+{
+  questionId: "uuid",
+  selectedChoiceIndex: 2,
+  isCorrect: true,
+  attemptCount: 1,
+  timeSpentSeconds: 45,
+  answeredAt: "2026-03-26T10:30:00Z"
+}
+
+Sample Incorrect Answer:
+{
+  questionId: "uuid",
+  selectedChoiceIndex: 1,
+  isCorrect: false,
+  attemptCount: 2,
+  timeSpentSeconds: 120,
+  answeredAt: "2026-03-26T11:15:00Z"
+}
+```
+
+### Activity Logs
+
+Sample events logged:
+```
+PLAY_START: When user clicks play on audio
+PLAY_COMPLETE: When audio finishes playing
+QUESTION_CORRECT: When user answers question correctly
+QUESTION_WRONG: When user answers question incorrectly
+```
+
+### API Response Examples
+
+#### GET /content
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "title": "Matematik 9 - Cebir Temelleri",
+      "type": "TEXTBOOK",
+      "description": "...",
+      "author": "Öğretmen Ayşe Yılmaz",
+      "publisher": "Eğitim Yayınları",
+      "isActive": true,
+      "createdAt": "2026-03-26T10:00:00Z",
+      "updatedAt": "2026-03-26T10:00:00Z"
+    },
+    ...
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 3
+  }
+}
+```
+
+#### GET /content/:id/chapters (Protected)
+```json
+{
+  "content": { ...book details... },
+  "chapters": [
+    {
+      "id": "uuid",
+      "title": "Bölüm 1: Temel Sayı Kavramları",
+      "description": "...",
+      "orderIndex": 0,
+      "audioRecordCount": 3,
+      "completedAudioCount": 2,
+      "progressPercent": 67,
+      "subChapters": [
+        {
+          "id": "uuid",
+          "title": "1.1 İşlemler ve Özellikleri",
+          "audioRecordCount": 1,
+          "completedAudioCount": 1,
+          "progressPercent": 100,
+          "subChapters": []
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### GET /questions/chapter/:id
+```json
+[
+  {
+    "id": "uuid",
+    "audioRecordId": "uuid",
+    "chapterId": "uuid",
+    "correctChoiceIndex": 2,
+    "difficultyLevel": "EASY",
+    "topicTags": ["temel sayı kavramları"],
+    "choices": [
+      {
+        "id": "uuid",
+        "choiceIndex": 0,
+        "choiceText": "Seçenek A",
+        "audioRecordId": "uuid"
+      },
+      ...
+    ],
+    "userAnswer": {
+      "selectedChoiceIndex": 2,
+      "isCorrect": true,
+      "attemptCount": 1,
+      "answeredAt": "2026-03-26T10:30:00Z"
+    }
+  }
+]
+```
+
+#### POST /questions/:id/answer
+Request:
+```json
+{
+  "questionId": "uuid",
+  "selectedChoiceIndex": 2,
+  "timeSpentSeconds": 45
+}
+```
+
+Response:
+```json
+{
+  "success": true,
+  "isCorrect": true,
+  "answer": {
+    "id": "uuid",
+    "userId": "uuid",
+    "questionId": "uuid",
+    "selectedChoiceIndex": 2,
+    "isCorrect": true,
+    "attemptCount": 1,
+    "timeSpentSeconds": 45,
+    "answeredAt": "2026-03-26T10:30:00Z",
+    "createdAt": "2026-03-26T10:30:00Z"
+  }
+}
+```
+
+#### GET /ilerleme
+```json
+{
+  "audioLearning": {
+    "totalListened": 8,
+    "completedAudio": 4,
+    "completionPercent": 50
+  },
+  "questionBank": {
+    "totalAttempts": 6,
+    "correctAnswers": 4,
+    "successRate": 67
+  },
+  "recentActivity": {
+    "lastAudioUpdated": "2026-03-26T11:00:00Z",
+    "lastQuestionAnswered": "2026-03-26T11:30:00Z"
+  }
+}
+```
+
+#### GET /ilerleme/statistics
+```json
+{
+  "totalAudioListened": 4,
+  "totalListeningSeconds": 3600,
+  "totalQuestionsAttempted": 6,
+  "correctAnswers": 4,
+  "successRate": 67,
+  "averageQuestionTime": 68,
+  "todayActivity": {
+    "hasActivity": true,
+    "activityCount": 10
+  }
+}
+```
+
+#### GET /ilerleme/retry-questions
+```json
+{
+  "total": 2,
+  "limit": 10,
+  "offset": 0,
+  "questions": [
+    {
+      "answer": {
+        "id": "uuid",
+        "selectedChoiceIndex": 1,
+        "attemptCount": 2,
+        "answeredAt": "2026-03-26T11:15:00Z"
+      },
+      "question": {
+        "id": "uuid",
+        "correctChoiceIndex": 2,
+        "choices": [...],
+        "explanationAudio": { ...audio record... }
+      },
+      "chapter": { ...chapter details... },
+      "content": { ...content details... }
+    }
+  ]
+}
+```
+
+## Migration Files
+
+### Initial Schema (0000_melted_thunderball.sql)
+Contains all base tables and relationships
+
+### New Tables (0001_easy_piledriver.sql)
+```sql
+CREATE TABLE "user_question_answers" (
+  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+  "user_id" uuid NOT NULL,
+  "question_id" uuid NOT NULL,
+  "selected_choice_index" integer NOT NULL,
+  "is_correct" boolean NOT NULL,
+  "attempt_count" integer DEFAULT 1 NOT NULL,
+  "time_spent_seconds" integer DEFAULT 0 NOT NULL,
+  "metadata" jsonb,
+  "answered_at" timestamp DEFAULT now() NOT NULL,
+  "created_at" timestamp DEFAULT now() NOT NULL
+);
+
+ALTER TABLE "user_question_answers"
+  ADD CONSTRAINT "user_question_answers_user_id_users_id_fk"
+  FOREIGN KEY ("user_id") REFERENCES "public"."users"("id")
+  ON DELETE cascade ON UPDATE no action;
+
+ALTER TABLE "user_question_answers"
+  ADD CONSTRAINT "user_question_answers_question_id_questions_id_fk"
+  FOREIGN KEY ("question_id") REFERENCES "public"."questions"("id")
+  ON DELETE cascade ON UPDATE no action;
+```
+
+## Data Population Summary
+
+When seed runs:
+- 1 Superadmin + 1 User created
+- 3 Books with hierarchical chapters
+- 12+ Audio records with transcripts
+- 5+ Questions with 4 choices each
+- User progress on ~8 audio records
+- User answers to ~6 questions
+- Activity logs for all events
+
+Total records created: ~100+
+

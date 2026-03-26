@@ -1,0 +1,159 @@
+## 🔧 CORS FIX - How to Run the Project
+
+### Problem
+CORS error: `The Same Origin Policy disallows reading the remote resource at http://localhost:3001/api/auth/login`
+
+### Solution Applied
+✅ Updated CORS configuration to allow port 3001
+
+---
+
+## 🚀 HOW TO RUN
+
+### 1. Start the API Server
+```bash
+cd apps/api
+npm run start:dev
+```
+
+API will run on: **http://localhost:3001**
+
+Swagger docs available at: **http://localhost:3001/api/docs**
+
+### 2. Start the Admin App
+```bash
+cd apps/admin
+npm run dev
+```
+
+Admin app will run on: **http://localhost:3000**
+
+### 3. Start the Web App
+```bash
+cd apps/web
+npm run dev
+```
+
+Web app will run on: **http://localhost:3002**
+
+---
+
+## 🔐 API Credentials
+
+**Admin Login:**
+```
+Email: admin@ozanbayir.com
+Password: Admin123!
+```
+
+**User Login:**
+```
+Email: kullanici@ozanbayir.com
+Password: Kullanici123!
+```
+
+---
+
+## 📡 API Endpoints
+
+The API is available at: **http://localhost:3001/api**
+
+Common endpoints:
+- `GET /api/content` - List all books
+- `GET /api/kesfet/:contentId` - Kesfet details page ⭐ NEW
+- `POST /api/auth/login` - Login
+- `GET /api/player/progress` - Get listening progress
+- `GET /api/questions/chapter/:id` - Get questions
+- `GET /api/ilerleme` - Get progress
+
+Complete API docs at: **http://localhost:3001/api/docs**
+
+---
+
+## ✅ CORS Configuration
+
+Updated to allow:
+- Port 3000 (Admin app)
+- Port 3001 (API)
+- Port 3002 (Web app)
+
+With headers:
+- Content-Type
+- Authorization
+
+---
+
+## 🧪 Test the API
+
+```bash
+# Test kesfet endpoint
+curl http://localhost:3001/api/kesfet/{BOOK_ID} \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Or use Swagger UI
+Visit: http://localhost:3001/api/docs
+```
+
+---
+
+## 📝 Database Setup
+
+Before running, make sure database is set up:
+
+```bash
+cd packages/db
+
+# Run migrations
+npm run db:migrate
+
+# Seed sample data
+npm run db:seed
+```
+
+---
+
+## 🎯 Quick Start (All at Once)
+
+1. **Setup DB**
+```bash
+cd packages/db
+npm run db:migrate
+npm run db:seed
+cd ../..
+```
+
+2. **Start API** (in new terminal)
+```bash
+cd apps/api
+npm run start:dev
+```
+
+3. **Start Admin** (in new terminal)
+```bash
+cd apps/admin
+npm run dev
+```
+
+4. **Start Web** (in new terminal)
+```bash
+cd apps/web
+npm run dev
+```
+
+Then visit:
+- **Admin**: http://localhost:3000
+- **Web**: http://localhost:3002
+- **API Docs**: http://localhost:3001/api/docs
+
+---
+
+## ✅ Everything Should Work Now!
+
+The CORS issue is fixed. The API and frontend can now communicate properly.
+
+If you still see CORS errors:
+1. Make sure API is running on port 3001
+2. Restart the API server: `npm run start:dev`
+3. Clear browser cache
+4. Check browser console for exact error message
+

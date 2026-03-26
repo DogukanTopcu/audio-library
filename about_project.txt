@@ -1,0 +1,23 @@
+on clicked a book in kesfet (kesfet/[contentId])
+- list all chapters and subchapters robustly
+
+for textbook/or ders kitabı (in kesfet/[contentId])
+- design an audio player to play audio records of subjects
+- track user progress on listened subjects
+- track user progress for the last listened subject
+- display this user progress on each chapter/subchapter
+- when user clicks on a chapter/subchapter, website will navigate to the audio player for that chapter
+
+for question banks (in kesfet/[contentId])
+- design a page to solve audio questions (with audio choices) from chapters
+- the page will contain next/previous question buttons
+- if user answers the question incorrect, a popup will appear and will prompt user to if he wants to listen the explanation/lecture
+  if he selects yes, then the audio will play.
+- track user progress on correctly/wrongly solved questions
+- track user progress for the last solved question and its chapter
+- display this user progress on each chapter/subchapter
+- when user clicks on a chapter/subchapter, website will navigate to the question bank for that chapter
+
+on ilerleme page
+- implement this page with previously tracked data
+- for incorrectly answered questions, put a panel so they can solve them again

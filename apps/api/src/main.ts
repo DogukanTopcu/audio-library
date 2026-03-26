@@ -17,9 +17,7 @@ async function bootstrap() {
       'http://localhost:3002',
     ],
     credentials: true,
-  });
-
-  app.useGlobalPipes(
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,

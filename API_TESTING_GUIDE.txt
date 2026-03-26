@@ -1,0 +1,380 @@
+## API Testing Guide - Curl Commands
+
+### 1. Authentication
+
+First, get JWT token for the test user:
+
+```bash
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "kullanici@ozanbayir.com",
+    "password": "Kullanici123!"
+  }'
+```
+
+Response will include a token. Use this token in all protected requests:
+```bash
+TOKEN="your_jwt_token_here"
+```
+
+### 2. Content Discovery (Kesfet Page)
+
+#### List all books
+```bash
+curl http://localhost:3000/content
+```
+
+#### Get single book details
+```bash
+curl http://localhost:3000/content/{contentId}
+```
+
+#### Get chapters with progress (Protected)
+```bash
+curl http://localhost:3000/content/{contentId}/chapters \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Response includes completion percentages per chapter
+
+#### Get chapters without progress (Public)
+```bash
+curl http://localhost:3000/content/{contentId}/chapters-public
+```
+
+### 3. Audio Player (Ders Dinle Page)
+
+#### Get audio token for playback
+```bash
+curl "http://localhost:3000/player/token?audioRecordId={audioRecordId}" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Returns signed URL for GCP bucket access
+
+#### Update listening progress
+```bash
+curl -X PATCH http://localhost:3000/player/progress \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "audioRecordId": "{audioRecordId}",
+    "positionSeconds": 120,
+    "isCompleted": false
+  }'
+```
+
+Mark as completed:
+```bash
+curl -X PATCH http://localhost:3000/player/progress \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "audioRecordId": "{audioRecordId}",
+    "positionSeconds": 480,
+    "isCompleted": true
+  }'
+```
+
+#### Get all user progress
+```bash
+curl http://localhost:3000/player/progress \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Returns all listened audio with progress percentages
+
+#### Get last listened chapter
+```bash
+curl http://localhost:3000/player/progress/last-chapter \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Use for "continue listening" feature
+
+#### Get chapter progress
+```bash
+curl "http://localhost:3000/player/progress/chapter/{chapterId}" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Shows completion % for each audio in chapter
+
+### 4. Question Bank (Soru Çöz Page)
+
+#### Get all questions in chapter
+```bash
+curl "http://localhost:3000/questions/chapter/{chapterId}" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Returns questions with previous answers if any
+
+#### Get single question
+```bash
+curl http://localhost:3000/questions/{questionId} \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Returns question with all 4 choices
+
+#### Submit answer (Correct)
+```bash
+curl -X POST http://localhost:3000/questions/{questionId}/answer \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "questionId": "{questionId}",
+    "selectedChoiceIndex": 2,
+    "timeSpentSeconds": 45
+  }'
+```
+
+#### Submit answer (Incorrect)
+```bash
+curl -X POST http://localhost:3000/questions/{questionId}/answer \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "questionId": "{questionId}",
+    "selectedChoiceIndex": 1,
+    "timeSpentSeconds": 120
+  }'
+```
+
+Response shows if correct and returns answer record:
+```json
+{
+  "success": true,
+  "isCorrect": false,
+  "answer": { ...answer details... }
+}
+```
+
+#### Get chapter question progress
+```bash
+curl "http://localhost:3000/questions/progress/chapter/{chapterId}" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Returns stats like success rate and question details
+
+#### Get incorrect questions for retry
+```bash
+curl "http://localhost:3000/questions/progress/incorrect?limit=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Returns questions user got wrong
+
+### 5. Progress Page (İlerleme)
+
+#### Get overall statistics
+```bash
+curl http://localhost:3000/ilerleme \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Returns dashboard with:
+- Total audio listened
+- Completion %
+- Question stats
+- Recent activity
+
+#### Get per-content progress
+```bash
+curl http://localhost:3000/ilerleme/contents \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Shows progress breakdown for each book
+
+#### Get chapter-level breakdown for content
+```bash
+curl "http://localhost:3000/ilerleme/contents/{contentId}/chapters" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Hierarchical chapter structure with progress
+
+#### Get retry panel questions
+```bash
+curl "http://localhost:3000/ilerleme/retry-questions?limit=10&offset=0" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Returns incorrect questions with full details for retry
+
+#### Get dashboard statistics
+```bash
+curl http://localhost:3000/ilerleme/statistics \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Returns:
+- Total audio listened
+- Total listening seconds
+- Question statistics
+- Daily activity tracking
+
+### 6. Full User Journey Example
+
+```bash
+#!/bin/bash
+
+# 1. Login to get token
+TOKEN=$(curl -s -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "kullanici@ozanbayir.com",
+    "password": "Kullanici123!"
+  }' | jq -r '.token')
+
+echo "Token: $TOKEN"
+
+# 2. Browse books
+echo "=== Books List ==="
+curl -s http://localhost:3000/content | jq '.data[0]'
+
+# Get first book ID
+CONTENT_ID=$(curl -s http://localhost:3000/content | jq -r '.data[0].id')
+echo "First Content ID: $CONTENT_ID"
+
+# 3. View chapters with progress
+echo "=== Chapters with Progress ==="
+curl -s "http://localhost:3000/content/$CONTENT_ID/chapters" \
+  -H "Authorization: Bearer $TOKEN" | jq '.chapters[0]'
+
+# Get first chapter ID
+CHAPTER_ID=$(curl -s "http://localhost:3000/content/$CONTENT_ID/chapters" \
+  -H "Authorization: Bearer $TOKEN" | jq -r '.chapters[0].id')
+echo "First Chapter ID: $CHAPTER_ID"
+
+# 4. Get audio for listening
+echo "=== Audio Records ==="
+# (Audio records are within chapters in the chapter structure)
+
+# 5. Get questions for the chapter
+echo "=== Questions ==="
+curl -s "http://localhost:3000/questions/chapter/$CHAPTER_ID" \
+  -H "Authorization: Bearer $TOKEN" | jq '.[0]'
+
+# Get first question ID
+QUESTION_ID=$(curl -s "http://localhost:3000/questions/chapter/$CHAPTER_ID" \
+  -H "Authorization: Bearer $TOKEN" | jq -r '.[0].id')
+echo "First Question ID: $QUESTION_ID"
+
+# 6. Submit an answer
+echo "=== Submitting Answer ==="
+curl -s -X POST "http://localhost:3000/questions/$QUESTION_ID/answer" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "questionId": "'$QUESTION_ID'",
+    "selectedChoiceIndex": 2,
+    "timeSpentSeconds": 45
+  }' | jq '.'
+
+# 7. View progress
+echo "=== Overall Progress ==="
+curl -s http://localhost:3000/ilerleme \
+  -H "Authorization: Bearer $TOKEN" | jq '.'
+
+# 8. View retry questions
+echo "=== Retry Questions ==="
+curl -s "http://localhost:3000/ilerleme/retry-questions?limit=5" \
+  -H "Authorization: Bearer $TOKEN" | jq '.questions[0]'
+
+# 9. View statistics
+echo "=== Statistics ==="
+curl -s http://localhost:3000/ilerleme/statistics \
+  -H "Authorization: Bearer $TOKEN" | jq '.'
+```
+
+### 7. Error Response Examples
+
+#### Invalid choice index
+```bash
+curl -X POST http://localhost:3000/questions/{questionId}/answer \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "questionId": "{questionId}",
+    "selectedChoiceIndex": 99,
+    "timeSpentSeconds": 45
+  }'
+```
+
+Response:
+```json
+{
+  "statusCode": 400,
+  "message": "Invalid choice index",
+  "error": "Bad Request"
+}
+```
+
+#### Unauthorized access
+```bash
+curl http://localhost:3000/player/progress
+```
+
+Response:
+```json
+{
+  "statusCode": 401,
+  "message": "Unauthorized",
+  "error": "Unauthorized"
+}
+```
+
+#### Resource not found
+```bash
+curl http://localhost:3000/content/invalid-uuid \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Response:
+```json
+{
+  "statusCode": 404,
+  "message": "Content not found",
+  "error": "Not Found"
+}
+```
+
+### 8. Pagination Examples
+
+#### Get page 2 of content
+```bash
+curl "http://localhost:3000/content?page=2&limit=5"
+```
+
+#### Limit retry questions
+```bash
+curl "http://localhost:3000/ilerleme/retry-questions?limit=5&offset=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### 9. Performance Tips
+
+1. Store token in environment variable to reuse across requests
+2. Use jq to parse JSON responses
+3. Add query parameters for pagination
+4. Cache static content queries (books/chapters don't change often)
+5. Batch user progress updates with debouncing
+
+### 10. Integration Checklist
+
+- [ ] Test unauthenticated content endpoints (should work)
+- [ ] Test protected endpoints without token (should fail)
+- [ ] Verify progress updates persist
+- [ ] Verify question answers marked correctly
+- [ ] Verify incorrect answers appear in retry list
+- [ ] Verify completion percentages calculate correctly
+- [ ] Verify hierarchy displays properly
+- [ ] Test pagination boundaries
+- [ ] Verify timestamps are correct timezone
+- [ ] Test edge cases (empty results, single item, etc.)
+

@@ -1,0 +1,114 @@
+## 🚀 QUICK FIX - COPY & PASTE COMMANDS
+
+The most common reason for CORS error: **API server wasn't restarted after fix**
+
+---
+
+## ⚡ FASTEST FIX (30 seconds)
+
+### 1. Kill all node processes
+```bash
+taskkill /F /IM node.exe
+```
+
+Wait 2 seconds.
+
+### 2. Start API
+```bash
+cd D:\Workspace\IZTECH\audio-library\apps\api
+npm run start:dev
+```
+
+**Wait** for this message to appear:
+```
+API running on http://localhost:3001
+```
+
+### 3. In a NEW command window, start Admin
+```bash
+cd D:\Workspace\IZTECH\audio-library\apps\admin
+npm run dev
+```
+
+### 4. Open browser
+```
+http://localhost:3000
+```
+
+Try to login with:
+- Email: `kullanici@ozanbayir.com`
+- Password: `Kullanici123!`
+
+---
+
+## ✅ Should Work Now!
+
+If still getting CORS error, check:
+1. Is API really running on port 3001? (Check terminal)
+2. Is Admin running on port 3000? (Check terminal)
+3. Try refreshing browser (Ctrl+F5)
+4. Try clearing browser cache
+
+---
+
+## 🧪 Verify Everything Works
+
+### Test API directly
+```bash
+curl http://localhost:3001/api/content
+```
+
+Should return JSON list of books (not error)
+
+### Test Login
+```bash
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d "{\"email\":\"kullanici@ozanbayir.com\",\"password\":\"Kullanici123!\"}"
+```
+
+Should return token (not CORS error)
+
+---
+
+## 🎯 If Still Not Working
+
+Try this complete clean start:
+
+```bash
+# 1. Kill everything
+taskkill /F /IM node.exe
+
+# 2. Go to API folder
+cd D:\Workspace\IZTECH\audio-library\apps\api
+
+# 3. Clear everything
+del node_modules /s /q
+del package-lock.json
+npm install
+
+# 4. Start fresh
+npm run start:dev
+```
+
+Then in new terminal:
+```bash
+cd D:\Workspace\IZTECH\audio-library\apps\admin
+npm run dev
+```
+
+---
+
+## 📝 Most Important
+
+**After making changes to `main.ts`**, you MUST:
+1. Stop the API server (Ctrl+C)
+2. Wait 2 seconds
+3. Start it again (`npm run start:dev`)
+4. Wait for "API running on..." message
+5. Only then try login in browser
+
+---
+
+That's it! This should fix the CORS error. 🎉
+

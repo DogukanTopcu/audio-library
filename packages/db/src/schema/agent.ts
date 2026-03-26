@@ -3,7 +3,7 @@ import {
   } from "drizzle-orm/pg-core";
   import { relations } from "drizzle-orm";
   import { users } from "./users";
-  import { audioRecords } from "./content";
+  import { audioRecords, questions } from "./content";
   
   export const messageRoleEnum = pgEnum("message_role", ["USER", "ASSISTANT", "SYSTEM"]);
   export const messageIntentEnum = pgEnum("message_intent", [
@@ -63,4 +63,18 @@ import {
     positionSeconds: integer("position_seconds").default(0).notNull(),
     isCompleted:     boolean("is_completed").default(false).notNull(),
     updatedAt:       timestamp("updated_at").defaultNow().notNull(),
+  });
+  
+  // User question answers tracking
+  export const userQuestionAnswers = pgTable("user_question_answers", {
+    id:              uuid("id").primaryKey().defaultRandom(),
+    userId:          uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    questionId:      uuid("question_id").notNull().references(() => questions.id, { onDelete: "cascade" }),
+    selectedChoiceIndex: integer("selected_choice_index").notNull(),
+    isCorrect:       boolean("is_correct").notNull(),
+    attemptCount:    integer("attempt_count").default(1).notNull(),
+    timeSpentSeconds: integer("time_spent_seconds").default(0).notNull(),
+    metadata:        jsonb("metadata"),
+    answeredAt:      timestamp("answered_at").defaultNow().notNull(),
+    createdAt:       timestamp("created_at").defaultNow().notNull(),
   });

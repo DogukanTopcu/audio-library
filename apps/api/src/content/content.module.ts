@@ -4,8 +4,8 @@ import { PublicContentController } from './public-content.controller.js';
 import { ContentService } from './content.service.js';
 
 @Module({
-  controllers: [ContentController, PublicContentController],
+  controllers: [ContentController, PublicContentController, KesfetController, KesfetDetailsController],
   providers: [ContentService],
-  exports: [ContentService],
+  controllers: [ContentController, PublicContentController],
 })
 export class ContentModule {}

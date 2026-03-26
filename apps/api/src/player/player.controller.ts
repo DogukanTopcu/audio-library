@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Query, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Query, Body, UseGuards } from '@nestjs/common';
 import { PlayerService } from './player.service.js';
 import { UpdateProgressDto } from './dto/update-progress.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
@@ -28,5 +28,31 @@ export class PlayerController {
       dto.positionSeconds,
       dto.isCompleted,
     );
+  }
+
+  @Get('progress')
+  async getProgress(@CurrentUser('id') userId: string) {
+    return this.playerService.getUserProgress(userId);
+  }
+
+  @Get('progress/last-chapter')
+  async getLastListenedChapter(@CurrentUser('id') userId: string) {
+    return this.playerService.getLastListenedChapter(userId);
+  }
+
+  @Get('progress/chapter/:chapterId')
+  async getChapterProgress(
+    @Param('chapterId') chapterId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.playerService.getChapterProgress(chapterId, userId);
+  }
+
+  @Get('chapter/:chapterId/audio-list')
+  async getChapterAudioList(
+    @Param('chapterId') chapterId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.playerService.getChapterAudioList(chapterId, userId);
   }
 }
