@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useParams } from "next/navigation";
 import {
   Play,
@@ -15,6 +15,8 @@ import {
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { useVoiceAssistant, type VoiceCommand } from "@/lib/use-voice-assistant";
+import { VoiceAssistantButton } from "@/components/voice-assistant-button";
 
 interface AudioInfo {
   id: string;
@@ -258,6 +260,48 @@ export default function AudioPlayerPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [togglePlay, seek, goToPrevious, goToNext, changeSpeed]);
 
+  /* ---- Voice assistant ---- */
+  const voiceCommands = useMemo<VoiceCommand[]>(() => [
+    {
+      keywords: ["sonraki", "sonraki kayıt", "sonraki kayit", "next"],
+      action: () => goToNext(),
+    },
+    {
+      keywords: ["önceki", "onceki", "önceki kayıt", "onceki kayit", "previous"],
+      action: () => goToPrevious(),
+    },
+    {
+      keywords: ["durdur", "dur", "pause", "stop"],
+      action: () => { audioRef.current?.pause(); setIsPlaying(false); },
+    },
+    {
+      keywords: ["başlat", "baslat", "oynat", "play", "çal", "cal"],
+      action: () => { audioRef.current?.play().catch(() => {}); setIsPlaying(true); },
+    },
+    {
+      keywords: ["tekrarla", "tekrar başlat", "tekrar baslat", "restart", "yeniden"],
+      action: () => {
+        const el = audioRef.current;
+        if (el) { el.currentTime = 0; el.play().catch(() => {}); setIsPlaying(true); }
+      },
+    },
+    {
+      keywords: ["ileri sar", "fast forward"],
+      action: () => seek(10),
+    },
+    {
+      keywords: ["geri sar", "rewind"],
+      action: () => seek(-10),
+    },
+  ], [goToNext, goToPrevious, seek]);
+
+  const {
+    isListening,
+    isSupported,
+    lastTranscript,
+    toggleListening,
+  } = useVoiceAssistant({ commands: voiceCommands, enabled: true });
+
   /* ---- Loading state ---- */
   if (isLoading) {
     return (
@@ -308,6 +352,15 @@ export default function AudioPlayerPage() {
         <h1 className="text-2xl md:text-3xl font-bold text-foreground">
           {audioInfo?.title || "Ses Kaydi"}
         </h1>
+        <div className="flex justify-center mt-4">
+          <VoiceAssistantButton
+            isListening={isListening}
+            isSupported={isSupported}
+            lastTranscript={lastTranscript}
+            onToggle={toggleListening}
+            showLabel
+          />
+        </div>
       </div>
 
       {/* Player controls */}

@@ -17,6 +17,7 @@ import { SiteConfigModule } from "./config/config.module.js";
 import { DashboardModule } from "./dashboard/dashboard.module.js";
 import { UploadModule } from "./upload/upload.module.js";
 import { PlayerModule } from "./player/player.module.js";
+import { SpeechModule } from "./speech/speech.module.js";
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { PlayerModule } from "./player/player.module.js";
     DashboardModule,
     UploadModule,
     PlayerModule,
+    SpeechModule,
   ],
 })
 export class AppModule {}

@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+// Use a relative path so requests go through the Next.js rewrite proxy,
+// which eliminates CORS issues entirely.
+const API_URL = "/api";
 
 let accessToken: string | null = null;
 

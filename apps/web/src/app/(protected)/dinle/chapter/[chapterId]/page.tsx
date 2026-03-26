@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -18,6 +18,8 @@ import {
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { useVoiceAssistant, type VoiceCommand } from "@/lib/use-voice-assistant";
+import { VoiceAssistantButton } from "@/components/voice-assistant-button";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                               */
@@ -258,6 +260,60 @@ export default function ChapterPlayerPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [togglePlay, seek, activeIndex, data, loadAudio]);
 
+  /* ---- Voice assistant ---- */
+  const activeIndexRef = useRef(activeIndex);
+  const dataRef = useRef(data);
+  useEffect(() => { activeIndexRef.current = activeIndex; }, [activeIndex]);
+  useEffect(() => { dataRef.current = data; }, [data]);
+
+  const voiceCommands = useMemo<VoiceCommand[]>(() => [
+    {
+      keywords: ["sonraki", "sonraki kayıt", "sonraki kayit", "next"],
+      action: () => {
+        const d = dataRef.current;
+        const idx = activeIndexRef.current;
+        if (d && idx < d.audioRecords.length - 1) loadAudio(idx + 1);
+      },
+    },
+    {
+      keywords: ["önceki", "onceki", "önceki kayıt", "onceki kayit", "previous"],
+      action: () => {
+        const idx = activeIndexRef.current;
+        if (idx > 0) loadAudio(idx - 1);
+      },
+    },
+    {
+      keywords: ["durdur", "dur", "pause", "stop"],
+      action: () => { audioRef.current?.pause(); setIsPlaying(false); },
+    },
+    {
+      keywords: ["başlat", "baslat", "oynat", "play", "çal", "cal"],
+      action: () => { audioRef.current?.play().catch(() => {}); setIsPlaying(true); },
+    },
+    {
+      keywords: ["tekrarla", "tekrar başlat", "tekrar baslat", "restart", "yeniden"],
+      action: () => {
+        const el = audioRef.current;
+        if (el) { el.currentTime = 0; el.play().catch(() => {}); setIsPlaying(true); }
+      },
+    },
+    {
+      keywords: ["ileri sar", "fast forward"],
+      action: () => seek(10),
+    },
+    {
+      keywords: ["geri sar", "rewind"],
+      action: () => seek(-10),
+    },
+  ], [loadAudio, seek]);
+
+  const {
+    isListening,
+    isSupported,
+    lastTranscript,
+    toggleListening,
+  } = useVoiceAssistant({ commands: voiceCommands, enabled: true });
+
   /* ---- Loading ---- */
   if (isLoading) {
     return (
@@ -297,7 +353,15 @@ export default function ChapterPlayerPage() {
       </Link>
 
       <h1 className="text-2xl font-bold text-foreground mb-2">{data.chapter.title}</h1>
-      <p className="text-[16px] text-muted-foreground mb-8">Ders Dinle</p>
+      <div className="flex items-center justify-between mb-8">
+        <p className="text-[16px] text-muted-foreground">Ders Dinle</p>
+        <VoiceAssistantButton
+          isListening={isListening}
+          isSupported={isSupported}
+          lastTranscript={lastTranscript}
+          onToggle={toggleListening}
+        />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Sidebar - Audio list */}

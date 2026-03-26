@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle, useMemo, createRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -14,10 +14,78 @@ import {
   XCircle,
   HelpCircle,
   Volume2,
+  SkipBack,
+  SkipForward,
 } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { useVoiceAssistant, type VoiceCommand } from "@/lib/use-voice-assistant";
+import { VoiceAssistantButton } from "@/components/voice-assistant-button";
+
+/* ------------------------------------------------------------------ */
+/*  Audio Coordinator — ensures only one player plays at a time         */
+/* ------------------------------------------------------------------ */
+type PlayerCallback = {
+  play: () => void;
+  pause: () => void;
+  seek: (offset: number) => void;
+  restart: () => void;
+};
+
+class AudioCoordinator {
+  private activePlaying?: string | null;
+  private players = new Map<string, PlayerCallback>();
+
+  /** Register a player. Returns an unregister function. */
+  register(id: string, cb: PlayerCallback) {
+    this.players.set(id, cb);
+    return () => { this.players.delete(id); };
+  }
+
+  /** Notify that a player started — pauses every other player. */
+  notifyPlay(activeId: string) {
+    this.activePlaying = activeId;
+    console.log("notify play ", activeId);
+    this.players.forEach((cb, id) => {
+      if (id !== activeId) cb.pause();
+    });
+  }
+
+  setCurrent(id: string) {
+    this.activePlaying = id;
+    console.log("set current ", id);
+  }
+
+  /** Resume the last active player. */
+  playCurrent() {
+    console.log("play current", this.activePlaying);
+    if (!this.activePlaying) return;
+    const cb = this.players.get(this.activePlaying);
+    if (cb) cb.play();
+  }
+
+  /** Seek the last active player by offset seconds. */
+  seekCurrent(offset: number) {
+    if (!this.activePlaying) return;
+    const cb = this.players.get(this.activePlaying);
+    if (cb) cb.seek(offset);
+  }
+
+  /** Restart the last active player from the beginning. */
+  restartCurrent() {
+    if (!this.activePlaying) return;
+    const cb = this.players.get(this.activePlaying);
+    if (cb) cb.restart();
+  }
+
+  /** Pause ALL players (used by "durdur" voice command). */
+  pauseAll() {
+    this.activePlaying = null;
+    console.log("active playing paused");
+    this.players.forEach((cb) => cb.pause());
+  }
+}
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                               */
@@ -50,103 +118,237 @@ interface Question {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Inline Audio Player                                                 */
+/*  Inline Audio Player (with imperative handle)                        */
 /* ------------------------------------------------------------------ */
-function InlineAudioPlayer({
-  audioRecordId,
-  label,
-  autoPlay = false,
-}: {
+export interface AudioPlayerHandle {
+  play: () => void;
+  pause: () => void;
+  seek: (offset: number) => void;
+  restart: () => void;
+}
+
+interface InlineAudioPlayerProps {
   audioRecordId: string;
   label: string;
   autoPlay?: boolean;
-}) {
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [url, setUrl] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
+  autoLoad?: boolean;
+  onPlayPause?: (key: string, state: boolean) => void;
+  /** Show ±10s seek buttons (used for question audio) */
+  showSeekControls?: boolean;
+  /** Coordinator that pauses other players when this one starts */
+  coordinator?: AudioCoordinator;
+  /** Unique id for coordinator registration */
+  coordinatorId?: string;
+}
 
-  const load = useCallback(async () => {
-    if (url) return; // already loaded
-    setIsLoading(true);
-    try {
-      const { data } = await api.get(`/player/token?audioRecordId=${audioRecordId}`);
-      const result = data.data || data;
-      setUrl(result.url);
-    } catch {
-      toast.error("Ses yuklenemedi.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [audioRecordId, url]);
+const InlineAudioPlayer = forwardRef<AudioPlayerHandle, InlineAudioPlayerProps>(
+  function InlineAudioPlayer({ audioRecordId, label, autoPlay = false, autoLoad = false, showSeekControls = false, onPlayPause = null, coordinator, coordinatorId }, ref) {
+    const audioRef = useRef<HTMLAudioElement>(null);
+    const [url, setUrl] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [duration, setDuration] = useState(0);
 
-  useEffect(() => {
-    if (autoPlay) load();
-  }, [autoPlay, load]);
+    if (autoPlay)
+      autoLoad = true;
 
-  useEffect(() => {
-    if (url && autoPlay && audioRef.current) {
-      audioRef.current.play().catch(() => {});
-      setIsPlaying(true);
-    }
-  }, [url, autoPlay]);
+    const playerId = coordinatorId || audioRecordId;
 
-  const togglePlay = async () => {
-    if (!url) {
-      await load();
-      setTimeout(() => {
-        audioRef.current?.play().catch(() => {});
+    // Register with coordinator
+    useEffect(() => {
+      if (!coordinator) return;
+      return coordinator.register(playerId, {
+        play: async () => {
+          audioRef.current?.play();
+          console.log("aref ", audioRef.current);
+          setIsPlaying(true);
+        },
+        pause: () => {
+          audioRef.current?.pause();
+          setIsPlaying(false);
+        },
+        seek: (offset: number) => {
+          const el = audioRef.current;
+          if (!el) return;
+          el.currentTime = Math.max(0, Math.min(el.duration || 0, el.currentTime + offset));
+        },
+        restart: () => {
+          const el = audioRef.current;
+          if (!el) return;
+          el.currentTime = 0;
+          el.play().catch(() => {});
+          setIsPlaying(true);
+        },
+      });
+    }, [coordinator, playerId]);
+
+    const load = useCallback(async () => {
+      if (url) return;
+      setIsLoading(true);
+      try {
+        const { data } = await api.get(`/player/token?audioRecordId=${audioRecordId}`);
+        const result = data.data || data;
+        setUrl(result.url);
+      } catch {
+        toast.error("Ses yuklenemedi.");
+      } finally {
+        setIsLoading(false);
+      }
+    }, [audioRecordId, url]);
+
+    useEffect(() => {
+      if (autoLoad) load();
+    }, [autoLoad, load]);
+
+    useEffect(() => {
+      if (url && autoPlay && audioRef.current) {
+        audioRef.current.play().catch(() => {});
         setIsPlaying(true);
-      }, 200);
-      return;
-    }
-    const el = audioRef.current;
-    if (!el) return;
-    if (isPlaying) {
-      el.pause();
+      }
+    }, [url, autoPlay]);
+
+    const doPlay = useCallback(() => {
+      coordinator?.notifyPlay(playerId);
+      if (!url) {
+        load().then(() => {
+          setTimeout(() => {
+            audioRef.current?.play().catch(() => {});
+            setIsPlaying(true);
+          }, 200);
+        });
+        return;
+      }
+      audioRef.current?.play().catch(() => {});
+      setIsPlaying(true);
+    }, [url, load, coordinator, playerId]);
+
+    const doPause = useCallback(() => {
+      audioRef.current?.pause();
       setIsPlaying(false);
-    } else {
+    }, []);
+
+    const doSeek = useCallback((offset: number) => {
+      const el = audioRef.current;
+      if (!el) return;
+      el.currentTime = Math.max(0, Math.min(el.duration || 0, el.currentTime + offset));
+    }, []);
+
+    const doRestart = useCallback(() => {
+      const el = audioRef.current;
+      if (!el) return;
+      coordinator?.notifyPlay(playerId);
+      el.currentTime = 0;
       el.play().catch(() => {});
       setIsPlaying(true);
-    }
-  };
+    }, [coordinator, playerId]);
 
-  const pct = duration > 0 ? (progress / duration) * 100 : 0;
+    // Expose imperative handle to parent
+    useImperativeHandle(ref, () => ({
+      play: doPlay,
+      pause: doPause,
+      seek: doSeek,
+      restart: doRestart,
+    }), [doPlay, doPause, doSeek, doRestart]);
 
-  return (
-    <div className="flex items-center gap-3">
-      {url && (
-        <audio
-          ref={audioRef}
-          src={url}
-          onTimeUpdate={() => audioRef.current && setProgress(audioRef.current.currentTime)}
-          onLoadedMetadata={() => audioRef.current && setDuration(audioRef.current.duration)}
-          onEnded={() => setIsPlaying(false)}
-          preload="metadata"
-        />
-      )}
-      <button
-        onClick={togglePlay}
-        disabled={isLoading}
-        aria-label={isPlaying ? `${label} duraklat` : `${label} oynat`}
-        className="w-[40px] h-[40px] rounded-full bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center flex-shrink-0 disabled:opacity-50 transition-colors"
-      >
-        {isLoading ? (
-          <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-        ) : isPlaying ? (
-          <Pause className="w-4 h-4" aria-hidden="true" />
-        ) : (
-          <Play className="w-4 h-4 ml-0.5" aria-hidden="true" />
+    const togglePlay = async () => {
+      if (!url) {
+        await load();
+        setTimeout(() => {
+          coordinator?.notifyPlay(playerId);
+          audioRef.current?.play().catch(() => {});
+          setIsPlaying(true);
+          if (onPlayPause) onPlayPause('', true);
+        }, 200);
+        return;
+      }
+      if (isPlaying) {
+        doPause();
+        if (onPlayPause) onPlayPause('', false);
+      } else {
+        doPlay();
+        if (onPlayPause) onPlayPause('', true);
+      }
+    };
+
+    const pct = duration > 0 ? (progress / duration) * 100 : 0;
+
+    return (
+      <div className="flex items-center gap-2">
+        {url && (
+          <audio
+            ref={audioRef}
+            src={url}
+            onTimeUpdate={() => audioRef.current && setProgress(audioRef.current.currentTime)}
+            onLoadedMetadata={() => audioRef.current && setDuration(audioRef.current.duration)}
+            onEnded={() => setIsPlaying(false)}
+            preload="metadata"
+          />
         )}
-      </button>
-      <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+
+        {/* Rewind button */}
+        {showSeekControls && (
+          <button
+            onClick={() => doSeek(-10)}
+            aria-label="10 saniye geri"
+            className="w-[32px] h-[32px] rounded-full bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground flex items-center justify-center flex-shrink-0 transition-colors"
+          >
+            <SkipBack className="w-3.5 h-3.5" aria-hidden="true" />
+          </button>
+        )}
+
+        {/* Play/Pause */}
+        <button
+          onClick={togglePlay}
+          disabled={isLoading}
+          aria-label={isPlaying ? `${label} duraklat` : `${label} oynat`}
+          className="w-[40px] h-[40px] rounded-full bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center flex-shrink-0 disabled:opacity-50 transition-colors"
+        >
+          {isLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+          ) : isPlaying ? (
+            <Pause className="w-4 h-4" aria-hidden="true" />
+          ) : (
+            <Play className="w-4 h-4 ml-0.5" aria-hidden="true" />
+          )}
+        </button>
+
+        {/* Forward button */}
+        {showSeekControls && (
+          <button
+            onClick={() => doSeek(10)}
+            aria-label="10 saniye ileri"
+            className="w-[32px] h-[32px] rounded-full bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground flex items-center justify-center flex-shrink-0 transition-colors"
+          >
+            <SkipForward className="w-3.5 h-3.5" aria-hidden="true" />
+          </button>
+        )}
+
+        {/* Progress bar (click to seek) */}
+        <div
+          className="flex-1 h-2 rounded-full bg-muted overflow-hidden cursor-pointer group relative"
+          onClick={(e) => {
+            const el = audioRef.current;
+            if (!el || !duration) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+            el.currentTime = ratio * duration;
+          }}
+          role="slider"
+          aria-label={`${label} ilerleme`}
+          aria-valuenow={Math.floor(progress)}
+          aria-valuemin={0}
+          aria-valuemax={Math.floor(duration)}
+          tabIndex={0}
+        >
+          <div className="h-full rounded-full bg-primary transition-all relative" style={{ width: `${pct}%` }}>
+            <div className="absolute right-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full bg-primary shadow opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
+);
 
 /* ------------------------------------------------------------------ */
 /*  Explanation Dialog                                                  */
@@ -155,13 +357,16 @@ function ExplanationDialog({
   open,
   explanationAudioId,
   onClose,
+  coordinator,
 }: {
   open: boolean;
   explanationAudioId: string | null;
   onClose: () => void;
+  coordinator?: AudioCoordinator;
 }) {
   if (!open) return null;
-
+  console.log("set");
+  coordinator?.setCurrent('explanation');
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
@@ -184,7 +389,7 @@ function ExplanationDialog({
               <Volume2 className="w-4 h-4" aria-hidden="true" />
               Aciklama
             </p>
-            <InlineAudioPlayer audioRecordId={explanationAudioId} label="Aciklama" autoPlay />
+            <InlineAudioPlayer audioRecordId={explanationAudioId} label="Aciklama" autoLoad coordinator={coordinator} coordinatorId="explanation" />
           </div>
         )}
 
@@ -218,6 +423,189 @@ export default function QuestionBankPage() {
   const [chapterTitle, setChapterTitle] = useState("");
   const [contentInfo, setContentInfo] = useState<{ id: string; title: string } | null>(null);
   const [startTime, setStartTime] = useState(Date.now());
+
+  /* ---- Audio coordinator (only one player at a time) ---- */
+  const [coordinator] = useState(() => new AudioCoordinator());
+
+  /* ---- Question audio player ref ---- */
+  const questionAudioRef = useRef<AudioPlayerHandle>(null);
+
+  /* ---- Choice audio player refs (A=0, B=1, C=2, D=3) ---- */
+  const choiceRefsMap = useRef<Map<number, React.RefObject<AudioPlayerHandle | null>>>(new Map());
+  const getChoiceRef = useCallback((choiceIndex: number) => {
+    if (!choiceRefsMap.current.has(choiceIndex)) {
+      choiceRefsMap.current.set(choiceIndex, createRef<AudioPlayerHandle>());
+    }
+    return choiceRefsMap.current.get(choiceIndex)!;
+  }, []);
+
+  /* ---- Refs for voice commands (avoid stale closures) ---- */
+  const currentIdxRef = useRef(currentIdx);
+  const questionsRef = useRef(questions);
+  const selectedChoiceRef = useRef(selectedChoice);
+  const showExplanationRef = useRef(showExplanation);
+  const lastResultRef = useRef(lastResult);
+
+  useEffect(() => { currentIdxRef.current = currentIdx; }, [currentIdx]);
+  useEffect(() => { questionsRef.current = questions; }, [questions]);
+  useEffect(() => { selectedChoiceRef.current = selectedChoice; }, [selectedChoice]);
+  useEffect(() => { showExplanationRef.current = showExplanation; }, [showExplanation]);
+  useEffect(() => { lastResultRef.current = lastResult; }, [lastResult]);
+
+  /* Stable navigation helpers for voice commands */
+  const goNextStable = useCallback(() => {
+    const idx = currentIdxRef.current;
+    const len = questionsRef.current.length;
+    if (idx < len - 1) setCurrentIdx(idx + 1);
+  }, []);
+
+  const goPrevStable = useCallback(() => {
+    const idx = currentIdxRef.current;
+    if (idx > 0) setCurrentIdx(idx - 1);
+  }, []);
+
+  /* ---- Voice assistant commands ---- */
+  const voiceCommands = useMemo<VoiceCommand[]>(() => [
+    // Navigation
+    {
+      keywords: ["sonraki", "sonraki soru", "ileri", "next"],
+      action: () => goNextStable(),
+    },
+    {
+      keywords: ["cevapla", "onayla", "cevabı gönder", "cevabi gonder", "answer it"],
+      action: async ()  => {
+        console.log("hello2");
+        if (!hasSubmittedThis && !alreadyAnswered && !isSubmitting && selectedChoice != null) await handleSubmit();
+      },
+    },
+    {
+      keywords: ["önceki", "onceki", "önceki soru", "onceki soru", "geri", "previous"],
+      action: () => goPrevStable(),
+    },
+    // Audio controls — pause ALL players
+    {
+      keywords: ["durdur", "dur", "pause", "stop", "sus"],
+      action: () => coordinator.pauseAll(),
+    },
+    {
+      keywords: ["başlat", "baslat", "oynat", "play", "çal", "cal"],
+      action: () => {
+        console.log("başlat");
+        coordinator.playCurrent();
+      },
+    },
+    {
+      keywords: ["soruyu oynat", "soruyu dinle", "soruyu başlat"],
+      action: () => {
+        console.log("jejeje");
+        questionAudioRef.current?.play();
+      },
+    },
+    {
+      keywords: ["tekrarla", "tekrar başlat", "tekrar baslat", "restart", "yeniden"],
+      action: () => coordinator.restartCurrent(),
+    },
+    {
+      keywords: ["ileri sar", "ileri", "fast forward"],
+      action: () => coordinator.seekCurrent(10),
+    },
+    {
+      keywords: ["geri sar", "rewind"],
+      action: () => coordinator.seekCurrent(-10),
+    },
+    // Play specific choice audio: "a şıkkını oynat/dinle"
+    {
+      keywords: [
+        "a şıkkını oynat", "a sikkini oynat", "a şıkkını dinle", "a sikkini dinle",
+        "a yı oynat", "a yi oynat", "a yı dinle", "a yi dinle",
+        "adana şıkkını oynat", "adana sikkini oynat", "adana şıkkını dinle", "adana sikkini dinle"
+      ],
+      action: () => {
+        console.log("hello");
+        getChoiceRef(0).current?.play();
+      },
+    },
+    {
+      keywords: [
+        "b şıkkını oynat", "b sikkini oynat", "b şıkkını dinle", "b sikkini dinle",
+        "b yi oynat", "b yi dinle",
+        "bursa şıkkını oynat", "bursa sikkini oynat", "bursa şıkkını dinle", "bursa sikkini dinle"
+      ],
+      action: () => getChoiceRef(1).current?.play(),
+    },
+    {
+      keywords: [
+        "c şıkkını oynat", "c sikkini oynat", "c şıkkını dinle", "c sikkini dinle",
+        "c yi oynat", "c yi dinle", "c'yi oynat", "c'yi dinle",
+        "ceyhan şıkkını oynat", "ceyhan sikkini oynat", "ceyhan şıkkını dinle", "ceyhan sikkini dinle"
+      ],
+      action: () => getChoiceRef(2).current?.play(),
+    },
+    {
+      keywords: [
+        "d şıkkını oynat", "d sikkini oynat", "d şıkkını dinle", "d sikkini dinle",
+        "d yi oynat", "d yi dinle", "d'yi oynat", "d'yi dinle",
+        "denizli şıkkını oynat", "denizli sikkini oynat", "denizli şıkkını dinle", "denizli sikkini dinle"
+      ],
+      action: () => getChoiceRef(3).current?.play(),
+    },
+    // Select answer choices
+    {
+      keywords: ["cevap a", "a şıkkı", "a sikki", "şık a", "sik a", "cevap adana"],
+      action: () => setSelectedChoice(0),
+    },
+    {
+      keywords: ["cevap b", "b şıkkı", "b sikki", "şık b", "sik b", "cevap bursa"],
+      action: () => setSelectedChoice(1),
+    },
+    {
+      keywords: ["cevap c", "c şıkkı", "c sikki", "şık c", "sik c", "cevap ceyhan"],
+      action: () => setSelectedChoice(2),
+    },
+    {
+      keywords: ["cevap d", "d şıkkı", "d sikki", "şık d", "sik d", "cevap denizli"],
+      action: () => setSelectedChoice(3),
+    },
+    // Popup yes/no
+    {
+      keywords: ["evet", "yes"],
+      action: () => {
+        if (showExplanationRef.current) {
+          coordinator.playCurrent(); // explanation dialog sets itself as current
+        }
+      }
+    },
+    {
+      keywords: ["açıklamayı dinle", "açıklama", "aciklamayi dinle", "aciklama", "explanation"],
+      action: () => {
+        setShowExplanation(true);
+      }
+    },
+    {
+      keywords: ["devam", "devam et"],
+      action: () => {
+        if (showExplanationRef.current) {
+          setShowExplanation(false);
+          goNextStable();
+        }
+      },
+    },
+    {
+      keywords: ["hayır", "hayir", "no", "kapat"],
+      action: () => {
+        if (showExplanationRef.current) {
+          setShowExplanation(false);
+        }
+      },
+    },
+  ], [goNextStable, goPrevStable, coordinator, getChoiceRef]);
+
+  const {
+    isListening,
+    isSupported,
+    lastTranscript,
+    toggleListening,
+  } = useVoiceAssistant({ commands: voiceCommands, enabled: true });
 
   /* ---- Fetch questions ---- */
   useEffect(() => {
@@ -294,6 +682,8 @@ export default function QuestionBankPage() {
       if (isCorrect) {
         toast.success("Dogru cevap!");
       } else {
+        // Pause all audio when wrong answer popup shows
+        coordinator.pauseAll();
         // Show explanation dialog
         setShowExplanation(true);
       }
@@ -363,6 +753,7 @@ export default function QuestionBankPage() {
         open={showExplanation}
         explanationAudioId={currentQuestion?.explanationAudioRecordId || null}
         onClose={() => setShowExplanation(false)}
+        coordinator={coordinator}
       />
 
       {/* Back */}
@@ -381,19 +772,27 @@ export default function QuestionBankPage() {
       <p className="text-[16px] text-muted-foreground mb-6">Soru Coz</p>
 
       {/* Stats bar */}
-      <div className="flex items-center gap-4 mb-6 text-[14px]">
-        <span className="text-muted-foreground">
-          Soru {currentIdx + 1} / {questions.length}
-        </span>
-        <span className="text-muted-foreground">|</span>
-        <span className="flex items-center gap-1 text-[#22c55e]">
-          <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
-          {correctCount} dogru
-        </span>
-        <span className="flex items-center gap-1 text-[#ef4444]">
-          <XCircle className="w-4 h-4" aria-hidden="true" />
-          {answeredCount - correctCount} yanlis
-        </span>
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-4 text-[14px]">
+          <span className="text-muted-foreground">
+            Soru {currentIdx + 1} / {questions.length}
+          </span>
+          <span className="text-muted-foreground">|</span>
+          <span className="flex items-center gap-1 text-[#22c55e]">
+            <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
+            {correctCount} dogru
+          </span>
+          <span className="flex items-center gap-1 text-[#ef4444]">
+            <XCircle className="w-4 h-4" aria-hidden="true" />
+            {answeredCount - correctCount} yanlis
+          </span>
+        </div>
+        <VoiceAssistantButton
+          isListening={isListening}
+          isSupported={isSupported}
+          lastTranscript={lastTranscript}
+          onToggle={toggleListening}
+        />
       </div>
 
       {/* Progress dots */}
@@ -429,10 +828,14 @@ export default function QuestionBankPage() {
               Soru {currentIdx + 1} - Soruyu dinleyin
             </p>
             <InlineAudioPlayer
+              ref={questionAudioRef}
               key={currentQuestion.audioRecordId}
               audioRecordId={currentQuestion.audioRecordId}
               label={`Soru ${currentIdx + 1}`}
               autoPlay
+              showSeekControls
+              coordinator={coordinator}
+              coordinatorId="question"
             />
           </div>
 
@@ -482,12 +885,12 @@ export default function QuestionBankPage() {
                 }
 
                 return (
-                  <button
+                  <div
                     key={choice.id}
                     onClick={() => {
                       if (!isAnswered) setSelectedChoice(choice.choiceIndex);
                     }}
-                    disabled={isAnswered}
+                    //disabled={isAnswered}
                     aria-label={`Secenek ${letter}${choice.choiceText ? `: ${choice.choiceText}` : ""}`}
                     className={`w-full flex items-center gap-4 px-4 py-4 border-2 rounded-xl transition-colors min-h-[60px] text-left ${borderColor} ${bgColor} ${
                       isAnswered ? "cursor-default" : "cursor-pointer"
@@ -508,8 +911,11 @@ export default function QuestionBankPage() {
                         <p className="text-[16px] text-foreground mb-2">{choice.choiceText}</p>
                       )}
                       <InlineAudioPlayer
+                        ref={getChoiceRef(choice.choiceIndex)}
                         audioRecordId={choice.audioRecordId}
                         label={`Secenek ${letter}`}
+                        coordinator={coordinator}
+                        coordinatorId={`choice-${choice.choiceIndex}`}
                       />
                     </div>
 
@@ -519,7 +925,7 @@ export default function QuestionBankPage() {
                     {isAnswered && wasUserChoice && !isCorrectChoice && (
                       <XCircle className="w-6 h-6 text-[#ef4444] flex-shrink-0" aria-hidden="true" />
                     )}
-                  </button>
+                  </div>
                 );
               })}
           </div>
