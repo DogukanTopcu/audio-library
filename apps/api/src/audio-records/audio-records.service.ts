@@ -1,9 +1,13 @@
 import { Injectable, Inject, NotFoundException, Logger } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, or } from 'drizzle-orm';
 import { DRIZZLE } from '../drizzle/drizzle.module.js';
 import * as schema from '../../../../packages/db/src/schema/index.js';
-import { audioRecords } from '../../../../packages/db/src/schema/index.js';
+import {
+  audioRecords,
+  questions,
+  questionChoices,
+} from '../../../../packages/db/src/schema/index.js';
 import { CreateAudioRecordDto } from './dto/create-audio-record.dto.js';
 import { UpdateAudioRecordDto } from './dto/update-audio-record.dto.js';
 
@@ -73,6 +77,25 @@ export class AudioRecordsService {
   async remove(id: string) {
     await this.findOne(id);
 
+    // Delete question choices that reference this audio record
+    await this.db.delete(questionChoices).where(
+      eq(questionChoices.audioRecordId, id),
+    );
+
+    // Delete questions that reference this audio record (as main or explanation audio)
+    await this.db.delete(questions).where(
+      or(
+        eq(questions.audioRecordId, id),
+        eq(questions.explanationAudioRecordId, id),
+      ),
+    );
+
+    // Delete user progress referencing this audio record
+    await this.db.delete(schema.userProgress).where(
+      eq(schema.userProgress.audioRecordId, id),
+    );
+
+    // Now delete the audio record itself
     await this.db.delete(audioRecords).where(eq(audioRecords.id, id));
 
     return { deleted: true };

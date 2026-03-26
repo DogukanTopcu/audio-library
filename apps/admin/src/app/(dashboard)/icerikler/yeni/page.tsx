@@ -51,22 +51,34 @@ export default function CreateContentPage() {
   const onSubmit = async (data: ContentForm) => {
     setIsSubmitting(true);
     try {
-      const formData = new FormData();
-      formData.append("title", data.title);
-      formData.append("type", data.type);
-      if (data.description) formData.append("description", data.description);
-      if (data.author) formData.append("author", data.author);
-      if (data.publisher) formData.append("publisher", data.publisher);
-      if (coverFile) formData.append("coverImage", coverFile);
+      let coverImageKey: string | undefined;
 
-      await api.post("/admin/content", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      // Step 1: Upload cover image if provided
+      if (coverFile) {
+        const formData = new FormData();
+        formData.append("file", coverFile);
+        const uploadRes = await api.post("/upload/image", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        const uploadData = uploadRes.data?.data ?? uploadRes.data;
+        coverImageKey = uploadData.key;
+      }
+
+      // Step 2: Create content with JSON body
+      await api.post("/admin/content", {
+        title: data.title,
+        type: data.type,
+        description: data.description || undefined,
+        author: data.author || undefined,
+        publisher: data.publisher || undefined,
+        coverImageKey,
       });
 
       toast.success("İçerik oluşturuldu");
       router.push("/icerikler");
-    } catch {
-      toast.error("İçerik oluşturulurken hata oluştu");
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || "İçerik oluşturulurken hata oluştu";
+      toast.error(typeof msg === "string" ? msg : "İçerik oluşturulurken hata oluştu");
     } finally {
       setIsSubmitting(false);
     }
@@ -144,10 +156,11 @@ export default function CreateContentPage() {
             {...register("type")}
           >
             <option value="">Tür seçiniz</option>
-            <option value="BOOK">Kitap</option>
-            <option value="PODCAST">Podcast</option>
-            <option value="LECTURE">Ders</option>
-            <option value="AUDIOBOOK">Sesli Kitap</option>
+            <option value="TEXTBOOK">Ders Kitabı</option>
+            <option value="NOVEL">Roman</option>
+            <option value="PRACTICE_TEST">Deneme Sınavı</option>
+            <option value="QUESTION_BANK">Soru Bankası</option>
+            <option value="OTHER">Diğer</option>
           </select>
           {errors.type && <p className="text-xs text-red-500">{errors.type.message}</p>}
         </div>

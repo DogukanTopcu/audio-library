@@ -16,13 +16,21 @@ import {
   X,
 } from "lucide-react";
 
+const audioTypeLabels: Record<string, string> = {
+  TOPIC_INTRO: "Konu Anlatımı",
+  QUESTION: "Soru",
+  EXPLANATION: "Açıklama",
+  STORY_PASSAGE: "Hikaye / Parça",
+  OTHER: "Diğer",
+};
+
 interface AudioRecord {
   id: string;
   title: string;
   type: string;
-  duration?: number;
-  fileUrl?: string;
-  order: number;
+  durationSeconds?: number;
+  bucketKey?: string;
+  orderIndex: number;
 }
 
 export default function ChapterAudioPage() {
@@ -35,7 +43,7 @@ export default function ChapterAudioPage() {
   const [showForm, setShowForm] = useState(false);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioTitle, setAudioTitle] = useState("");
-  const [audioType, setAudioType] = useState("RECORDING");
+  const [audioType, setAudioType] = useState("TOPIC_INTRO");
   const [uploading, setUploading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -43,9 +51,9 @@ export default function ChapterAudioPage() {
   const fetchAudios = useCallback(async () => {
     try {
       const res = await api.get("/admin/audio-records", { params: { chapterId } });
-      const data = res.data.data || res.data;
-      const items: AudioRecord[] = Array.isArray(data) ? data : data.items || [];
-      setAudios(items.sort((a, b) => a.order - b.order));
+      const payload = res.data?.data ?? res.data;
+      const items: AudioRecord[] = Array.isArray(payload) ? payload : payload.items || [];
+      setAudios(items.sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0)));
     } catch {
       toast.error("Ses kayıtları yüklenemedi");
     } finally {
@@ -61,24 +69,35 @@ export default function ChapterAudioPage() {
     if (!audioFile || !audioTitle.trim()) return;
     setUploading(true);
     try {
+      // Step 1: Upload file to GCP
       const formData = new FormData();
       formData.append("file", audioFile);
-      formData.append("title", audioTitle);
-      formData.append("type", audioType);
-      formData.append("chapterId", chapterId);
+      const uploadRes = await api.post(
+        `/upload/audio?contentId=${contentId}&chapterId=${chapterId}`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } },
+      );
+      const uploadData = uploadRes.data?.data ?? uploadRes.data;
 
-      await api.post("/admin/audio-records", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      // Step 2: Create audio record with bucketKey
+      await api.post("/admin/audio-records", {
+        chapterId,
+        title: audioTitle,
+        type: audioType,
+        bucketKey: uploadData.key,
+        durationSeconds: uploadData.durationSeconds || 0,
+        orderIndex: audios.length,
       });
 
       toast.success("Ses kaydı eklendi");
       setShowForm(false);
       setAudioFile(null);
       setAudioTitle("");
-      setAudioType("RECORDING");
+      setAudioType("TOPIC_INTRO");
       fetchAudios();
-    } catch {
-      toast.error("Yükleme başarısız");
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || "Yükleme başarısız";
+      toast.error(typeof msg === "string" ? msg : "Yükleme başarısız");
     } finally {
       setUploading(false);
     }
@@ -122,12 +141,13 @@ export default function ChapterAudioPage() {
     if (!draggedId) return;
     setDraggedId(null);
 
+    // Reorder each item individually via the existing endpoint
     try {
-      const orderedIds = audios.map((a) => a.id);
-      await api.patch("/admin/audio-records/reorder", {
-        chapterId,
-        orderedIds,
-      });
+      await Promise.all(
+        audios.map((audio, index) =>
+          api.patch(`/admin/audio-records/${audio.id}/reorder`, { orderIndex: index })
+        ),
+      );
       toast.success("Sıralama güncellendi");
     } catch {
       toast.error("Sıralama güncellenemedi");
@@ -140,19 +160,6 @@ export default function ChapterAudioPage() {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m}:${String(s).padStart(2, "0")}`;
-  };
-
-  const typeBadgeColor = (type: string) => {
-    switch (type) {
-      case "RECORDING":
-        return "bg-sky-100 text-sky-700";
-      case "MUSIC":
-        return "bg-violet-100 text-violet-700";
-      case "NARRATION":
-        return "bg-emerald-100 text-emerald-700";
-      default:
-        return "bg-muted text-muted-foreground";
-    }
   };
 
   if (loading) {
@@ -219,9 +226,11 @@ export default function ChapterAudioPage() {
               onChange={(e) => setAudioType(e.target.value)}
               className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-ring"
             >
-              <option value="RECORDING">Kayıt</option>
-              <option value="MUSIC">Müzik</option>
-              <option value="NARRATION">Anlatım</option>
+              <option value="TOPIC_INTRO">Konu Anlatımı</option>
+              <option value="QUESTION">Soru</option>
+              <option value="EXPLANATION">Açıklama</option>
+              <option value="STORY_PASSAGE">Hikaye / Parça</option>
+              <option value="OTHER">Diğer</option>
             </select>
 
             <input
@@ -265,16 +274,11 @@ export default function ChapterAudioPage() {
               >
                 <GripVertical className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                 <AudioLines className="h-4 w-4 text-violet-600 flex-shrink-0" />
-                <span
-                  className={cn(
-                    "rounded-full px-2 py-0.5 text-[10px] font-medium",
-                    typeBadgeColor(audio.type)
-                  )}
-                >
-                  {audio.type}
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  {audioTypeLabels[audio.type] || audio.type}
                 </span>
                 <span className="flex-1 text-sm text-foreground">{audio.title}</span>
-                <span className="text-xs text-muted-foreground">{formatDuration(audio.duration)}</span>
+                <span className="text-xs text-muted-foreground">{formatDuration(audio.durationSeconds)}</span>
                 <button
                   onClick={() => handleDelete(audio.id)}
                   disabled={deletingId === audio.id}

@@ -19,6 +19,7 @@ import {
   AudioLines,
   FolderOpen,
   X,
+  Trash2,
 } from "lucide-react";
 
 const contentSchema = z.object({
@@ -38,7 +39,7 @@ interface ContentData {
   description?: string;
   author?: string;
   publisher?: string;
-  coverImageUrl?: string;
+  coverImageKey?: string;
   isActive: boolean;
   createdAt: string;
 }
@@ -47,21 +48,34 @@ interface Chapter {
   id: string;
   title: string;
   parentId: string | null;
-  order: number;
+  orderIndex: number;
   children?: Chapter[];
-  _count?: {
-    children: number;
-    audioRecords: number;
-  };
 }
 
 interface AudioRecord {
   id: string;
   title: string;
   type: string;
-  duration?: number;
-  fileUrl?: string;
+  durationSeconds?: number;
+  bucketKey?: string;
+  orderIndex: number;
 }
+
+const typeLabels: Record<string, string> = {
+  TEXTBOOK: "Ders Kitabı",
+  NOVEL: "Roman",
+  PRACTICE_TEST: "Deneme Sınavı",
+  QUESTION_BANK: "Soru Bankası",
+  OTHER: "Diğer",
+};
+
+const audioTypeLabels: Record<string, string> = {
+  TOPIC_INTRO: "Konu Anlatımı",
+  QUESTION: "Soru",
+  EXPLANATION: "Açıklama",
+  STORY_PASSAGE: "Hikaye / Parça",
+  OTHER: "Diğer",
+};
 
 export default function ContentDetailPage() {
   const params = useParams();
@@ -81,13 +95,15 @@ export default function ContentDetailPage() {
   const [newChapterTitle, setNewChapterTitle] = useState("");
   const [newChapterParentId, setNewChapterParentId] = useState<string | null>(null);
   const [creatingChapter, setCreatingChapter] = useState(false);
+  const [deletingChapterId, setDeletingChapterId] = useState<string | null>(null);
 
   // Audio modal
   const [audioModal, setAudioModal] = useState<{ chapterId: string } | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioTitle, setAudioTitle] = useState("");
-  const [audioType, setAudioType] = useState("RECORDING");
+  const [audioType, setAudioType] = useState("TOPIC_INTRO");
   const [uploadingAudio, setUploadingAudio] = useState(false);
+  const [deletingAudioId, setDeletingAudioId] = useState<string | null>(null);
 
   const {
     register,
@@ -101,7 +117,7 @@ export default function ContentDetailPage() {
   const fetchContent = useCallback(async () => {
     try {
       const res = await api.get(`/admin/content/${id}`);
-      const data = res.data.data || res.data;
+      const data = res.data?.data ?? res.data;
       setContent(data);
       reset({
         title: data.title,
@@ -118,8 +134,8 @@ export default function ContentDetailPage() {
   const fetchChapters = useCallback(async () => {
     try {
       const res = await api.get(`/admin/chapters`, { params: { contentId: id } });
-      const data = res.data.data || res.data;
-      setChapters(Array.isArray(data) ? data : data.items || []);
+      const payload = res.data?.data ?? res.data;
+      setChapters(Array.isArray(payload) ? payload : payload.items || []);
     } catch {
       toast.error("Bölümler yüklenemedi");
     }
@@ -158,10 +174,10 @@ export default function ContentDetailPage() {
         setLoadingAudios((prev) => new Set(prev).add(chapterId));
         try {
           const res = await api.get(`/admin/audio-records`, { params: { chapterId } });
-          const data = res.data.data || res.data;
+          const payload = res.data?.data ?? res.data;
           setChapterAudios((prev) => ({
             ...prev,
-            [chapterId]: Array.isArray(data) ? data : data.items || [],
+            [chapterId]: Array.isArray(payload) ? payload : payload.items || [],
           }));
         } catch {
           toast.error("Ses kayıtları yüklenemedi");
@@ -184,7 +200,7 @@ export default function ContentDetailPage() {
       await api.post("/admin/chapters", {
         title: newChapterTitle,
         contentId: id,
-        parentId: newChapterParentId,
+        parentId: newChapterParentId || undefined,
       });
       toast.success("Bölüm oluşturuldu");
       setNewChapterTitle("");
@@ -198,18 +214,48 @@ export default function ContentDetailPage() {
     }
   };
 
+  const handleDeleteChapter = async (chapterId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Bu bölümü silmek istediğinizden emin misiniz? Alt bölümler ve ses kayıtları da silinecektir.")) return;
+    setDeletingChapterId(chapterId);
+    try {
+      await api.delete(`/admin/chapters/${chapterId}`);
+      toast.success("Bölüm silindi");
+      // Clear audios cache for this chapter
+      setChapterAudios((prev) => {
+        const next = { ...prev };
+        delete next[chapterId];
+        return next;
+      });
+      fetchChapters();
+    } catch {
+      toast.error("Bölüm silinemedi");
+    } finally {
+      setDeletingChapterId(null);
+    }
+  };
+
   const handleUploadAudio = async () => {
     if (!audioModal || !audioFile || !audioTitle.trim()) return;
     setUploadingAudio(true);
     try {
+      // Step 1: Upload file to GCP via upload endpoint
       const formData = new FormData();
       formData.append("file", audioFile);
-      formData.append("title", audioTitle);
-      formData.append("type", audioType);
-      formData.append("chapterId", audioModal.chapterId);
+      const uploadRes = await api.post(
+        `/upload/audio?contentId=${id}&chapterId=${audioModal.chapterId}`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } },
+      );
+      const uploadData = uploadRes.data?.data ?? uploadRes.data;
 
-      await api.post("/admin/audio-records", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      // Step 2: Create audio record with the bucketKey
+      await api.post("/admin/audio-records", {
+        chapterId: audioModal.chapterId,
+        title: audioTitle,
+        type: audioType,
+        bucketKey: uploadData.key,
+        durationSeconds: uploadData.durationSeconds || 0,
       });
 
       toast.success("Ses kaydı eklendi");
@@ -218,28 +264,53 @@ export default function ContentDetailPage() {
       const res = await api.get(`/admin/audio-records`, {
         params: { chapterId: audioModal.chapterId },
       });
-      const data = res.data.data || res.data;
+      const payload = res.data?.data ?? res.data;
       setChapterAudios((prev) => ({
         ...prev,
-        [audioModal.chapterId]: Array.isArray(data) ? data : data.items || [],
+        [audioModal.chapterId]: Array.isArray(payload) ? payload : payload.items || [],
       }));
 
       setAudioModal(null);
       setAudioFile(null);
       setAudioTitle("");
-      setAudioType("RECORDING");
-    } catch {
-      toast.error("Ses kaydı yüklenemedi");
+      setAudioType("TOPIC_INTRO");
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || "Ses kaydı yüklenemedi";
+      toast.error(typeof msg === "string" ? msg : "Ses kaydı yüklenemedi");
     } finally {
       setUploadingAudio(false);
+    }
+  };
+
+  const handleDeleteAudio = async (chapterId: string, audioId: string) => {
+    if (!confirm("Bu ses kaydını silmek istediğinizden emin misiniz?")) return;
+    setDeletingAudioId(audioId);
+    try {
+      await api.delete(`/admin/audio-records/${audioId}`);
+      toast.success("Ses kaydı silindi");
+      setChapterAudios((prev) => ({
+        ...prev,
+        [chapterId]: (prev[chapterId] || []).filter((a) => a.id !== audioId),
+      }));
+    } catch {
+      toast.error("Ses kaydı silinemedi");
+    } finally {
+      setDeletingAudioId(null);
     }
   };
 
   const buildTree = (items: Chapter[], parentId: string | null = null): Chapter[] => {
     return items
       .filter((c) => c.parentId === parentId)
-      .sort((a, b) => a.order - b.order)
+      .sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
       .map((c) => ({ ...c, children: buildTree(items, c.id) }));
+  };
+
+  const formatDuration = (seconds?: number) => {
+    if (!seconds) return "";
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${String(s).padStart(2, "0")}`;
   };
 
   const renderChapterTree = (chapters: Chapter[], depth = 0) => {
@@ -247,8 +318,7 @@ export default function ContentDetailPage() {
       const isExpanded = expandedChapters.has(chapter.id);
       const audios = chapterAudios[chapter.id] || [];
       const isLoadingAudio = loadingAudios.has(chapter.id);
-      const subCount = chapter._count?.children ?? chapter.children?.length ?? 0;
-      const audioCount = chapter._count?.audioRecords ?? 0;
+      const hasChildren = chapter.children && chapter.children.length > 0;
 
       return (
         <div key={chapter.id} style={{ marginLeft: depth * 20 }}>
@@ -265,11 +335,9 @@ export default function ContentDetailPage() {
             </button>
             <FolderOpen className="h-4 w-4 text-muted-foreground" />
             <span className="flex-1 text-sm text-foreground">{chapter.title}</span>
-            <span className="text-xs text-muted-foreground">
-              {subCount > 0 && `${subCount} alt bolum`}
-              {subCount > 0 && audioCount > 0 && " / "}
-              {audioCount > 0 && `${audioCount} ses`}
-            </span>
+            {hasChildren && (
+              <span className="text-xs text-muted-foreground">{chapter.children!.length} alt bölüm</span>
+            )}
             <button
               onClick={() => {
                 setNewChapterParentId(chapter.id);
@@ -287,12 +355,18 @@ export default function ContentDetailPage() {
             >
               <AudioLines className="h-3.5 w-3.5" />
             </button>
-            <Link
-              href={`/icerikler/${id}/bolumler/${chapter.id}`}
-              className="opacity-0 group-hover:opacity-100 text-xs text-muted-foreground hover:text-foreground"
+            <button
+              onClick={(e) => handleDeleteChapter(chapter.id, e)}
+              disabled={deletingChapterId === chapter.id}
+              className="opacity-0 group-hover:opacity-100 rounded p-1 text-muted-foreground hover:text-red-600 disabled:opacity-50"
+              title="Bölümü sil"
             >
-              Detay
-            </Link>
+              {deletingChapterId === chapter.id ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="h-3.5 w-3.5" />
+              )}
+            </button>
           </div>
 
           {isExpanded && (
@@ -307,18 +381,30 @@ export default function ContentDetailPage() {
                   {audios.map((audio) => (
                     <div
                       key={audio.id}
-                      className="flex items-center gap-3 px-8 py-1.5"
+                      className="flex items-center gap-3 px-8 py-1.5 group/audio hover:bg-muted/50 rounded"
                     >
                       <AudioLines className="h-3 w-3 text-violet-600" />
-                      <span className="text-xs text-muted-foreground">{audio.title}</span>
+                      <span className="text-xs text-foreground flex-1">{audio.title}</span>
                       <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
-                        {audio.type}
+                        {audioTypeLabels[audio.type] || audio.type}
                       </span>
-                      {audio.duration && (
+                      {audio.durationSeconds ? (
                         <span className="text-[10px] text-muted-foreground">
-                          {Math.floor(audio.duration / 60)}:{String(audio.duration % 60).padStart(2, "0")}
+                          {formatDuration(audio.durationSeconds)}
                         </span>
-                      )}
+                      ) : null}
+                      <button
+                        onClick={() => handleDeleteAudio(chapter.id, audio.id)}
+                        disabled={deletingAudioId === audio.id}
+                        className="opacity-0 group-hover/audio:opacity-100 rounded p-0.5 text-muted-foreground hover:text-red-600 disabled:opacity-50"
+                        title="Ses kaydını sil"
+                      >
+                        {deletingAudioId === audio.id ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-3 w-3" />
+                        )}
+                      </button>
                     </div>
                   ))}
                 </>
@@ -373,14 +459,6 @@ export default function ContentDetailPage() {
           >
             <h2 className="text-sm font-semibold text-foreground">İçerik Bilgileri</h2>
 
-            {content.coverImageUrl && (
-              <img
-                src={content.coverImageUrl}
-                alt={content.title}
-                className="h-40 w-28 rounded-lg object-cover border border-border"
-              />
-            )}
-
             <div className="space-y-2">
               <label className="block text-xs font-medium text-muted-foreground">Başlık</label>
               <input
@@ -403,10 +481,11 @@ export default function ContentDetailPage() {
                 )}
                 {...register("type")}
               >
-                <option value="BOOK">Kitap</option>
-                <option value="PODCAST">Podcast</option>
-                <option value="LECTURE">Ders</option>
-                <option value="AUDIOBOOK">Sesli Kitap</option>
+                <option value="TEXTBOOK">Ders Kitabı</option>
+                <option value="NOVEL">Roman</option>
+                <option value="PRACTICE_TEST">Deneme Sınavı</option>
+                <option value="QUESTION_BANK">Soru Bankası</option>
+                <option value="OTHER">Diğer</option>
               </select>
             </div>
 
@@ -472,7 +551,7 @@ export default function ContentDetailPage() {
                   type="text"
                   value={newChapterTitle}
                   onChange={(e) => setNewChapterTitle(e.target.value)}
-                  placeholder="Bölüm adı"
+                  placeholder={newChapterParentId ? "Alt bölüm adı" : "Bölüm adı"}
                   className="flex-1 rounded border border-input bg-card px-3 py-1.5 text-sm text-foreground placeholder-zinc-600 outline-none focus:border-ring"
                   onKeyDown={(e) => e.key === "Enter" && handleCreateChapter()}
                 />
@@ -546,9 +625,11 @@ export default function ContentDetailPage() {
                 onChange={(e) => setAudioType(e.target.value)}
                 className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground outline-none focus:border-ring"
               >
-                <option value="RECORDING">Kayıt</option>
-                <option value="MUSIC">Müzik</option>
-                <option value="NARRATION">Anlatım</option>
+                <option value="TOPIC_INTRO">Konu Anlatımı</option>
+                <option value="QUESTION">Soru</option>
+                <option value="EXPLANATION">Açıklama</option>
+                <option value="STORY_PASSAGE">Hikaye / Parça</option>
+                <option value="OTHER">Diğer</option>
               </select>
             </div>
 

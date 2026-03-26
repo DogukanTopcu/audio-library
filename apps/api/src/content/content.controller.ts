@@ -13,7 +13,7 @@ import { ContentService } from './content.service.js';
 import { CreateContentDto } from './dto/create-content.dto.js';
 import { UpdateContentDto } from './dto/update-content.dto.js';
 import { AssignCategoriesDto } from './dto/assign-categories.dto.js';
-import { PaginationDto } from '../common/dto/pagination.dto.js';
+import { ContentQueryDto } from './dto/content-query.dto.js';
 import { AdminAuthGuard } from '../auth/guards/admin-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
@@ -29,13 +29,8 @@ export class ContentController {
   ) {}
 
   @Get()
-  findAll(
-    @Query() pagination: PaginationDto,
-    @Query('type') type?: string,
-    @Query('categoryId') categoryId?: string,
-    @Query('isActive') isActive?: string,
-    @Query('search') search?: string,
-  ) {
+  findAll(@Query() query: ContentQueryDto) {
+    const { type, categoryId, isActive, search, ...pagination } = query;
     return this.contentService.findAll(pagination, {
       type,
       categoryId,
