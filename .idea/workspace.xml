@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="0c9407b3-fade-48b1-bc0e-8b99f03b0e99" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/apps/api/src/content/dto/content-query.dto.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/web/src/lib/use-speech-commands.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/icerikler/[id]/bolumler/[chapterId]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/icerikler/[id]/bolumler/[chapterId]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/icerikler/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/icerikler/[id]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/icerikler/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/icerikler/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/icerikler/yeni/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/icerikler/yeni/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/audio-records/audio-records.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/audio-records/audio-records.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/chapters/chapters.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/chapters/chapters.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/content/content.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/content/content.controller.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/upload/upload.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/upload/upload.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pnpm-lock.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pnpm-lock.yaml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_C:/Users/batu2/WebstormProjects/audio-library" value="3BTHpfMlegGnkEytDfZK1z9Wfpg" />
+    </persistenceIdMap>
+  </component>
+  <component name="CopilotUserSelectedChatMode">
+    <option name="chatModeId" value="Agent" />
+  </component>
+  <component name="CopilotUserSelectedModel">
+    <selectedModels>
+      <entry key="chat-panel" value="Claude Opus 4.6" />
+      <entry key="agent-panel" value="Claude Opus 4.6" />
+    </selectedModels>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="demo" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;pimogbu&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/DogukanTopcu/audio-library.git&quot;,
+    &quot;accountId&quot;: &quot;682a0667-ab41-4b18-b482-f7dbeef71afd&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3BTHpfMlegGnkEytDfZK1z9Wfpg" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "demo",
+    "git.auto.fetch.suggestion.counter": "3",
+    "ignore.virus.scanning.warn.message": "true",
+    "javascript.preferred.runtime.type.id": "node",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs_package_manager_path": "pnpm",
+    "npm.build.executor": "Run",
+    "npm.dev.executor": "Run",
+    "npm.run.executor": "Run",
+    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings",
+    "ts.external.directory.path": "C:\\Program Files\\JetBrains\\WebStorm 2026.1\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration name="dev" type="js.build_tools.npm" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="dev" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-3bd3a6803838-JavaScript-WS-261.22158.274" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="0c9407b3-fade-48b1-bc0e-8b99f03b0e99" name="Changes" comment="" />
+      <created>1774506323514</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1774506323514</updated>
+      <workItem from="1774506324608" duration="195000" />
+      <workItem from="1774526176537" duration="6816000" />
+      <workItem from="1774547742107" duration="74000" />
+      <workItem from="1774547887464" duration="1611000" />
+      <workItem from="1774549509217" duration="9277000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="origin/demo" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
+  </component>
+</project>

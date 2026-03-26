@@ -16,13 +16,14 @@ import {
   ChevronRight,
   Eye,
   EyeOff,
+  Library,
 } from "lucide-react";
 
 interface Content {
   id: string;
   title: string;
   type: string;
-  coverImageUrl?: string;
+  coverImageKey?: string;
   isActive: boolean;
   createdAt: string;
 }
@@ -34,6 +35,14 @@ interface PaginatedResponse {
   limit: number;
   totalPages: number;
 }
+
+const typeLabels: Record<string, string> = {
+  TEXTBOOK: "Ders Kitabı",
+  NOVEL: "Roman",
+  PRACTICE_TEST: "Deneme Sınavı",
+  QUESTION_BANK: "Soru Bankası",
+  OTHER: "Diğer",
+};
 
 export default function ContentListPage() {
   const { admin } = useAdminAuth();
@@ -53,9 +62,21 @@ export default function ContentListPage() {
       const params: Record<string, string | number> = { page, limit: 20 };
       if (search) params.search = search;
       if (typeFilter) params.type = typeFilter;
-      if (activeFilter !== "") params.is_active = activeFilter;
+      if (activeFilter !== "") params.isActive = activeFilter;
       const res = await api.get("/admin/content", { params });
-      setData(res.data.data || res.data);
+      // TransformInterceptor wraps response as { success, data: <payload>, timestamp }
+      // ContentService.findAll returns { data: [...items], meta: { total, page, limit, totalPages } }
+      // So full shape: res.data = { success, data: { data: [...], meta: {...} }, timestamp }
+      const payload = res.data?.data ?? res.data;
+      const items = payload?.data ?? payload?.items ?? (Array.isArray(payload) ? payload : []);
+      const meta = payload?.meta;
+      setData({
+        items,
+        total: meta?.total ?? items.length,
+        page: meta?.page ?? page,
+        limit: meta?.limit ?? 20,
+        totalPages: meta?.totalPages ?? 1,
+      });
     } catch {
       toast.error("İçerikler yüklenirken hata oluştu");
     } finally {
@@ -135,10 +156,11 @@ export default function ContentListPage() {
           className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-ring"
         >
           <option value="">Tüm Türler</option>
-          <option value="BOOK">Kitap</option>
-          <option value="PODCAST">Podcast</option>
-          <option value="LECTURE">Ders</option>
-          <option value="AUDIOBOOK">Sesli Kitap</option>
+          <option value="TEXTBOOK">Ders Kitabı</option>
+          <option value="NOVEL">Roman</option>
+          <option value="PRACTICE_TEST">Deneme Sınavı</option>
+          <option value="QUESTION_BANK">Soru Bankası</option>
+          <option value="OTHER">Diğer</option>
         </select>
         <select
           value={activeFilter}
@@ -180,12 +202,10 @@ export default function ContentListPage() {
                 items.map((item) => (
                   <tr key={item.id} className="border-b border-border hover:bg-card transition-colors">
                     <td className="px-4 py-3">
-                      {item.coverImageUrl ? (
-                        <img
-                          src={item.coverImageUrl}
-                          alt={item.title}
-                          className="h-10 w-8 rounded object-cover"
-                        />
+                      {item.coverImageKey ? (
+                        <div className="flex h-10 w-8 items-center justify-center rounded bg-primary/10 text-primary">
+                          <Library className="h-4 w-4" />
+                        </div>
                       ) : (
                         <div className="h-10 w-8 rounded bg-muted" />
                       )}
@@ -197,7 +217,7 @@ export default function ContentListPage() {
                     </td>
                     <td className="px-4 py-3">
                       <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                        {item.type}
+                        {typeLabels[item.type] || item.type}
                       </span>
                     </td>
                     <td className="px-4 py-3">

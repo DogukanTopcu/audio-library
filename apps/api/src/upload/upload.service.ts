@@ -2,6 +2,7 @@ import {
   Injectable,
   Inject,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GCP_STORAGE } from '../gcp/gcp.module.js';
@@ -10,10 +11,12 @@ import { Storage } from '@google-cloud/storage';
 import Redis from 'ioredis';
 import { randomUUID } from 'crypto';
 import { extname } from 'path';
+import { parseBuffer } from 'music-metadata';
 
 @Injectable()
 export class UploadService {
   private bucketName: string;
+  private readonly logger = new Logger(UploadService.name);
 
   constructor(
     @Inject(GCP_STORAGE) private readonly storage: Storage,
@@ -40,14 +43,20 @@ export class UploadService {
     contentId: string,
     chapterId: string,
   ): Promise<{ key: string; url: string; durationSeconds: number }> {
-    this.validateFile(file, ['audio/mpeg', 'audio/mp4', 'audio/wav'], 200 * 1024 * 1024);
+    this.validateFile(file, ['audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/ogg', 'audio/webm'], 200 * 1024 * 1024);
 
     const key = `audio/${contentId}/${chapterId}/${randomUUID()}.mp3`;
     await this.uploadToGcs(key, file.buffer, file.mimetype);
     const url = await this.generateSignedUrl(key, 60);
 
-    // Duration extraction would use ffprobe in production; return 0 as placeholder
-    const durationSeconds = 0;
+    // Extract audio duration from buffer
+    let durationSeconds = 0;
+    try {
+      const metadata = await parseBuffer(file.buffer, { mimeType: file.mimetype as any });
+      durationSeconds = Math.round(metadata.format.duration ?? 0);
+    } catch (err) {
+      this.logger.warn(`Could not extract audio duration: ${err}`);
+    }
 
     return { key, url, durationSeconds };
   }
