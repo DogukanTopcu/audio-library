@@ -1,6 +1,6 @@
 import {
     pgTable, uuid, varchar, integer, boolean, timestamp,
-    pgEnum, text, jsonb, vector, index
+    pgEnum, text, jsonb, vector, index, primaryKey
   } from "drizzle-orm/pg-core";
   import { relations } from "drizzle-orm";
   
@@ -52,7 +52,9 @@ import {
   export const contentCategories = pgTable("content_categories", {
     contentId:  uuid("content_id").notNull().references(() => content.id, { onDelete: "cascade" }),
     categoryId: uuid("category_id").notNull().references(() => categories.id, { onDelete: "cascade" }),
-  });
+  }, (t) => [
+    primaryKey({ columns: [t.contentId, t.categoryId] }),
+  ]);
   
   // ── Chapters (recursive — chapter can contain sub-chapters) ──────────
   export const chapters = pgTable("chapters", {

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -20,6 +20,7 @@ import {
   FolderOpen,
   X,
   Trash2,
+  Tags,
 } from "lucide-react";
 
 const contentSchema = z.object({
@@ -42,6 +43,15 @@ interface ContentData {
   coverImageKey?: string;
   isActive: boolean;
   createdAt: string;
+  categoryIds?: string[];
+}
+
+interface CategoryNode {
+  id: string;
+  name: string;
+  slug: string;
+  parentId: string | null;
+  children: CategoryNode[];
 }
 
 interface Chapter {
@@ -61,13 +71,24 @@ interface AudioRecord {
   orderIndex: number;
 }
 
-const typeLabels: Record<string, string> = {
-  TEXTBOOK: "Ders Kitabı",
-  NOVEL: "Roman",
-  PRACTICE_TEST: "Deneme Sınavı",
-  QUESTION_BANK: "Soru Bankası",
-  OTHER: "Diğer",
+type ApiErrorLike = {
+  response?: {
+    data?: {
+      message?: string | string[];
+    };
+  };
 };
+
+function getApiErrorMessage(error: unknown) {
+  const message = (error as ApiErrorLike)?.response?.data?.message;
+  if (Array.isArray(message)) {
+    return message.find((item) => typeof item === "string" && item.trim().length > 0) ?? null;
+  }
+
+  return typeof message === "string" && message.trim().length > 0
+    ? message
+    : null;
+}
 
 const audioTypeLabels: Record<string, string> = {
   TOPIC_INTRO: "Konu Anlatımı",
@@ -77,9 +98,33 @@ const audioTypeLabels: Record<string, string> = {
   OTHER: "Diğer",
 };
 
+function normalizeCategoryKey(value: string | null | undefined) {
+  return (value ?? "")
+    .toLowerCase()
+    .replace(/ı/g, "i")
+    .replace(/ğ/g, "g")
+    .replace(/ü/g, "u")
+    .replace(/ş/g, "s")
+    .replace(/ö/g, "o")
+    .replace(/ç/g, "c")
+    .replace(/[^a-z0-9]+/g, "")
+    .trim();
+}
+
+function isLessonsRoot(category: CategoryNode) {
+  const slugKey = normalizeCategoryKey(category.slug);
+  const nameKey = normalizeCategoryKey(category.name);
+  return slugKey === "lessons" || nameKey === "lessons" || nameKey === "dersler";
+}
+
+function isClassRoot(category: CategoryNode) {
+  const slugKey = normalizeCategoryKey(category.slug);
+  const nameKey = normalizeCategoryKey(category.name);
+  return slugKey === "class" || nameKey === "class" || nameKey === "sinif";
+}
+
 export default function ContentDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const id = params.id as string;
 
   const [content, setContent] = useState<ContentData | null>(null);
@@ -105,6 +150,12 @@ export default function ContentDetailPage() {
   const [uploadingAudio, setUploadingAudio] = useState(false);
   const [deletingAudioId, setDeletingAudioId] = useState<string | null>(null);
 
+  // Categories - one selection per root category
+  const [allCategories, setAllCategories] = useState<CategoryNode[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState("");
+  const [selectedLessonId, setSelectedLessonId] = useState("");
+  const [savingCategories, setSavingCategories] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -114,11 +165,30 @@ export default function ContentDetailPage() {
     resolver: zodResolver(contentSchema),
   });
 
+  const lessonsRoot = useMemo(
+    () => allCategories.find(isLessonsRoot) ?? null,
+    [allCategories],
+  );
+  const classRoot = useMemo(
+    () => allCategories.find(isClassRoot) ?? null,
+    [allCategories],
+  );
+  const classCategories = useMemo(() => classRoot?.children ?? [], [classRoot]);
+  const lessonCategories = useMemo(() => lessonsRoot?.children ?? [], [lessonsRoot]);
+
   const fetchContent = useCallback(async () => {
     try {
       const res = await api.get(`/admin/content/${id}`);
       const data = res.data?.data ?? res.data;
       setContent(data);
+
+      // Determine current class + lessons from categoryIds
+      const catIds: string[] = data.categoryIds || [];
+      const foundClass = classCategories.find((category) => catIds.includes(category.id))?.id ?? "";
+      const foundLesson = lessonCategories.find((category) => catIds.includes(category.id))?.id ?? "";
+      setSelectedClassId(foundClass);
+      setSelectedLessonId(foundLesson);
+
       reset({
         title: data.title,
         type: data.type,
@@ -129,12 +199,21 @@ export default function ContentDetailPage() {
     } catch {
       toast.error("İçerik yüklenemedi");
     }
-  }, [id, reset]);
+  }, [id, reset, classCategories, lessonCategories]);
+
+  // Fetch all categories
+  useEffect(() => {
+    api.get("/admin/categories").then((res) => {
+      const cats = res.data?.data ?? res.data ?? [];
+      setAllCategories(Array.isArray(cats) ? cats : []);
+    }).catch(() => {});
+  }, []);
 
   const fetchChapters = useCallback(async () => {
     try {
       const res = await api.get(`/admin/chapters`, { params: { contentId: id } });
       const payload = res.data?.data ?? res.data;
+      // API already returns a tree structure - use directly
       setChapters(Array.isArray(payload) ? payload : payload.items || []);
     } catch {
       toast.error("Bölümler yüklenemedi");
@@ -160,6 +239,23 @@ export default function ContentDetailPage() {
       toast.error("Güncelleme başarısız");
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Save categories (one per root)
+  const saveCategories = async () => {
+    setSavingCategories(true);
+    try {
+      const categoryIds = Array.from(
+        new Set([selectedClassId, selectedLessonId].filter(Boolean)),
+      );
+      await api.post(`/admin/content/${id}/categories`, { categoryIds });
+      toast.success("Kategoriler güncellendi");
+      fetchContent();
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error) ?? "Kategori güncellemesi başarısız");
+    } finally {
+      setSavingCategories(false);
     }
   };
 
@@ -207,8 +303,9 @@ export default function ContentDetailPage() {
       setNewChapterParentId(null);
       setShowNewChapter(false);
       fetchChapters();
-    } catch {
-      toast.error("Bölüm oluşturulamadı");
+    } catch (err: unknown) {
+      const msg = (err as ApiErrorLike)?.response?.data?.message;
+      toast.error(typeof msg === "string" ? msg : "Bölüm oluşturulamadı");
     } finally {
       setCreatingChapter(false);
     }
@@ -228,8 +325,9 @@ export default function ContentDetailPage() {
         return next;
       });
       fetchChapters();
-    } catch {
-      toast.error("Bölüm silinemedi");
+    } catch (err: unknown) {
+      const msg = (err as ApiErrorLike)?.response?.data?.message;
+      toast.error(typeof msg === "string" ? msg : "Bölüm silinemedi");
     } finally {
       setDeletingChapterId(null);
     }
@@ -254,7 +352,7 @@ export default function ContentDetailPage() {
         chapterId: audioModal.chapterId,
         title: audioTitle,
         type: audioType,
-        bucketKey: uploadData.key,
+        bucketKey: uploadData.key || `audio/${id}/${audioModal.chapterId}/fallback.mp3`,
         durationSeconds: uploadData.durationSeconds || 0,
       });
 
@@ -274,8 +372,8 @@ export default function ContentDetailPage() {
       setAudioFile(null);
       setAudioTitle("");
       setAudioType("TOPIC_INTRO");
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || "Ses kaydı yüklenemedi";
+    } catch (err: unknown) {
+      const msg = (err as ApiErrorLike)?.response?.data?.message || "Ses kaydı yüklenemedi";
       toast.error(typeof msg === "string" ? msg : "Ses kaydı yüklenemedi");
     } finally {
       setUploadingAudio(false);
@@ -292,18 +390,12 @@ export default function ContentDetailPage() {
         ...prev,
         [chapterId]: (prev[chapterId] || []).filter((a) => a.id !== audioId),
       }));
-    } catch {
-      toast.error("Ses kaydı silinemedi");
+    } catch (err: unknown) {
+      const msg = (err as ApiErrorLike)?.response?.data?.message;
+      toast.error(typeof msg === "string" ? msg : "Ses kaydı silinemedi");
     } finally {
       setDeletingAudioId(null);
     }
-  };
-
-  const buildTree = (items: Chapter[], parentId: string | null = null): Chapter[] => {
-    return items
-      .filter((c) => c.parentId === parentId)
-      .sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
-      .map((c) => ({ ...c, children: buildTree(items, c.id) }));
   };
 
   const formatDuration = (seconds?: number) => {
@@ -313,8 +405,9 @@ export default function ContentDetailPage() {
     return `${m}:${String(s).padStart(2, "0")}`;
   };
 
-  const renderChapterTree = (chapters: Chapter[], depth = 0) => {
-    return chapters.map((chapter) => {
+  // NOTE: API already returns a tree, so we use chapters directly (no buildTree)
+  const renderChapterTree = (chapterList: Chapter[], depth = 0) => {
+    return chapterList.map((chapter) => {
       const isExpanded = expandedChapters.has(chapter.id);
       const audios = chapterAudios[chapter.id] || [];
       const isLoadingAudio = loadingAudios.has(chapter.id);
@@ -389,7 +482,7 @@ export default function ContentDetailPage() {
                         {audioTypeLabels[audio.type] || audio.type}
                       </span>
                       {audio.durationSeconds ? (
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-[10px] text-muted-foreground font-mono">
                           {formatDuration(audio.durationSeconds)}
                         </span>
                       ) : null}
@@ -435,8 +528,6 @@ export default function ContentDetailPage() {
       </div>
     );
   }
-
-  const chapterTree = buildTree(chapters);
 
   return (
     <div className="space-y-6">
@@ -525,6 +616,94 @@ export default function ContentDetailPage() {
               Kaydet
             </button>
           </form>
+
+          <div className="mt-4 space-y-4 rounded-xl border border-border bg-card p-5">
+            <h2 className="text-sm font-semibold text-foreground">Kategoriler</h2>
+
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Sınıf
+                </p>
+                <select
+                  value={selectedClassId}
+                  onChange={(e) => setSelectedClassId(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground outline-none focus:border-ring"
+                >
+                  <option value="">Sınıf seçiniz...</option>
+                  {classCategories.map((item) => (
+                    <option key={item.id} value={item.id}>{item.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Ders
+                  </p>
+                  {selectedLessonId && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedLessonId("")}
+                      className="text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      Temizle
+                    </button>
+                  )}
+                </div>
+
+                {lessonCategories.length > 0 ? (
+                  <select
+                    value={selectedLessonId}
+                    onChange={(e) => setSelectedLessonId(e.target.value)}
+                    className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground outline-none focus:border-ring"
+                  >
+                    <option value="">Ders seçiniz...</option>
+                    {lessonCategories.map((lesson) => (
+                      <option key={lesson.id} value={lesson.id}>
+                        {lesson.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <p className="rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
+                    Lessons altında ders kategorisi bulunamadı.
+                  </p>
+                )}
+
+                <p className="text-[11px] text-muted-foreground">
+                  Her ana kategori altında yalnızca 1 seçim yapılabilir.
+                </p>
+              </div>
+
+              {(selectedClassId || selectedLessonId) && (
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <span>Seçili:</span>
+                  {selectedClassId && (
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary">
+                      {classCategories.find((item) => item.id === selectedClassId)?.name}
+                    </span>
+                  )}
+                  {selectedLessonId && (
+                    <span
+                      className="rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary"
+                    >
+                      {lessonCategories.find((item) => item.id === selectedLessonId)?.name}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={saveCategories}
+                disabled={savingCategories}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+              >
+                {savingCategories ? <Loader2 className="h-4 w-4 animate-spin" /> : <Tags className="h-4 w-4" />}
+                Kategorileri Kaydet
+              </button>
+          </div>
         </div>
 
         {/* Right: Chapter Tree (60%) */}
@@ -578,12 +757,12 @@ export default function ContentDetailPage() {
               </div>
             )}
 
-            {chapterTree.length === 0 ? (
+            {chapters.length === 0 ? (
               <p className="text-sm text-muted-foreground py-8 text-center">
                 Henüz bölüm eklenmemiş
               </p>
             ) : (
-              <div className="space-y-0.5">{renderChapterTree(chapterTree)}</div>
+              <div className="space-y-0.5">{renderChapterTree(chapters)}</div>
             )}
           </div>
         </div>

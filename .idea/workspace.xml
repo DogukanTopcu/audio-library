@@ -1,29 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2dea6511-a3f0-4528-9ea0-a74aa407faf5" name="Changes" comment="" />
+    <list default="true" id="2dea6511-a3f0-4528-9ea0-a74aa407faf5" name="Changes" comment="enhance category management: add category syncing and validation utilities">
+      <change afterPath="$PROJECT_DIR$/apps/api/src/content/category-utils.spec.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/content/category-utils.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/player/player.service.spec.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/apps/api/src/speech/speech.service.spec.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/packages/db/src/category-hierarchy.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/packages/db/src/sync-category-hierarchy.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/icerikler/[id]/bolumler/[chapterId]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/icerikler/[id]/bolumler/[chapterId]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/icerikler/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/icerikler/[id]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/icerikler/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/icerikler/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/kategoriler/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/admin/src/app/(dashboard)/kategoriler/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/auth/user-auth/user-auth.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/auth/user-auth/user-auth.controller.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/categories/categories.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/categories/categories.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/content/content.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/content/content.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/player/player.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/player/player.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/src/speech/speech.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/src/speech/speech.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/api/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/tsconfig.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/app/(protected)/dinle/[audioRecordId]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/app/(protected)/dinle/[audioRecordId]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/app/(protected)/dinle/chapter/[chapterId]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/app/(protected)/dinle/chapter/[chapterId]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/app/(protected)/ilerleme/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/app/(protected)/ilerleme/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/app/(protected)/kesfet/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/app/(protected)/kesfet/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/app/(protected)/sorun-coz/[chapterId]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/app/(protected)/sorun-coz/[chapterId]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/lib/use-voice-assistant.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/lib/use-voice-assistant.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/db/migrations/meta/_journal.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/db/migrations/meta/_journal.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/db/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/db/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/db/src/schema/content.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/db/src/schema/content.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/db/src/seed.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/db/src/seed.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pnpm-lock.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pnpm-lock.yaml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/DogukanTopcu/audio-library.git",
-    "accountId": "b692c9e8-743a-4746-8340-3baa349a6d36"
+  <component name="CopilotUserSelectedChatMode">
+    <option name="chatModeId" value="Agent" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/DogukanTopcu/audio-library.git&quot;,
+    &quot;accountId&quot;: &quot;b692c9e8-743a-4746-8340-3baa349a6d36&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "dart.analysis.tool.window.visible": "false",
-    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings",
-    "ts.external.directory.path": "D:\\Workspace\\IZTECH\\audio-library\\node_modules\\typescript\\lib"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;demo&quot;,
+    &quot;javascript.preferred.runtime.type.id&quot;: &quot;node&quot;,
+    &quot;npm.dev.executor&quot;: &quot;Run&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.DirectoryMappings&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\batu2\\WebstormProjects\\audio-library\\node_modules\\typescript\\lib&quot;
   }
-}]]></component>
+}</component>
+  <component name="RunManager">
+    <configuration name="dev" type="js.build_tools.npm" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="dev" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+  </component>
   <component name="TaskManager">
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="enhance category management: add category syncing and validation utilities" />
+    <option name="LAST_COMMIT_MESSAGE" value="enhance category management: add category syncing and validation utilities" />
   </component>
 </project>

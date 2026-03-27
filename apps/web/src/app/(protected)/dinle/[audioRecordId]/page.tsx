@@ -51,18 +51,41 @@ export default function AudioPlayerPage() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const loadedAudioIdRef = useRef<string | null>(null);
+  const loadingAudioIdRef = useRef<string | null>(null);
+  const latestFetchRequestRef = useRef(0);
   const [showShortcuts, setShowShortcuts] = useState(false);
 
   /* ---- Fetch audio token & info ---- */
   const fetchAudio = useCallback(
     async (id: string) => {
+      if (loadingAudioIdRef.current === id) {
+        return;
+      }
+
+      if (loadedAudioIdRef.current === id && audioInfo?.id === id && signedUrl) {
+        return;
+      }
+
+      latestFetchRequestRef.current += 1;
+      const requestId = latestFetchRequestRef.current;
+      loadingAudioIdRef.current = id;
       setIsLoading(true);
       setIsPlaying(false);
+
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+
       try {
         const { data } = await api.get(
           `/player/token?audioRecordId=${id}`
         );
         const result = data.data || data;
+        if (requestId !== latestFetchRequestRef.current) {
+          return;
+        }
+
         setSignedUrl(result.signedUrl || result.url);
         setAudioInfo({
           id,
@@ -72,13 +95,19 @@ export default function AudioPlayerPage() {
           previousId: result.previousId,
           nextId: result.nextId,
         });
+        loadedAudioIdRef.current = id;
+        setCurrentTime(0);
+        setDuration(0);
       } catch {
         toast.error("Ses kaydi yuklenirken bir hata olustu.");
       } finally {
+        if (loadingAudioIdRef.current === id) {
+          loadingAudioIdRef.current = null;
+        }
         setIsLoading(false);
       }
     },
-    []
+    [audioInfo?.id, signedUrl]
   );
 
   useEffect(() => {
@@ -328,6 +357,7 @@ export default function AudioPlayerPage() {
       {/* Hidden audio element */}
       {signedUrl && (
         <audio
+          key={audioInfo?.id ?? signedUrl}
           ref={audioRef}
           src={signedUrl}
           onTimeUpdate={handleTimeUpdate}

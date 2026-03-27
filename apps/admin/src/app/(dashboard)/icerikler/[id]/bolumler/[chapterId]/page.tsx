@@ -33,6 +33,14 @@ interface AudioRecord {
   orderIndex: number;
 }
 
+type ApiErrorLike = {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+};
+
 export default function ChapterAudioPage() {
   const params = useParams();
   const contentId = params.id as string;
@@ -95,8 +103,8 @@ export default function ChapterAudioPage() {
       setAudioTitle("");
       setAudioType("TOPIC_INTRO");
       fetchAudios();
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || "Yükleme başarısız";
+    } catch (err: unknown) {
+      const msg = (err as ApiErrorLike)?.response?.data?.message || "Yükleme başarısız";
       toast.error(typeof msg === "string" ? msg : "Yükleme başarısız");
     } finally {
       setUploading(false);

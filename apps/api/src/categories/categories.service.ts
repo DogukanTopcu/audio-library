@@ -75,7 +75,15 @@ export class CategoriesService {
   }
 
   async remove(id: string) {
-    const existing = await this.findOne(id);
+    await this.findOne(id);
+
+    // Recursively delete children first to avoid FK violations
+    const children = await this.db.query.categories.findMany({
+      where: eq(categories.parentId, id),
+    });
+    for (const child of children) {
+      await this.remove(child.id);
+    }
 
     await this.db.delete(categories).where(eq(categories.id, id));
 

@@ -15,6 +15,13 @@
       "when": 1774476731766,
       "tag": "0001_easy_piledriver",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774624145337,
+      "tag": "0002_omniscient_stephen_strange",
+      "breakpoints": true
     }
   ]
 }

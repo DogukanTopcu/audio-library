@@ -1,9 +1,11 @@
 import { drizzle } from "drizzle-orm/node-postgres";
+import { eq } from "drizzle-orm";
 import { Pool } from "pg";
 import { config } from "dotenv";
 import { resolve } from "path";
 import * as bcrypt from "bcryptjs";
 import * as schema from "./schema/index.js";
+import { syncCanonicalCategoryHierarchy } from "./category-hierarchy.js";
 
 config({ path: resolve(process.cwd(), "../../.env") });
 
@@ -260,7 +262,7 @@ async function seed() {
     console.log(`✅ Content created: ${contentData.title}`);
 
     // Recursively create chapters and audio records
-    async function createChapters(chapters: ChapterData[], parentId: string | null, contentId: string) {
+    const createChapters = async (chapters: ChapterData[], parentId: string | null, contentId: string) => {
       for (let i = 0; i < chapters.length; i++) {
         const chapterData = chapters[i];
         const [createdChapter] = await db.insert(schema.chapters).values({
@@ -337,6 +339,49 @@ async function seed() {
     }
 
     await createChapters(contentData.chapters, null, createdContent.id);
+  }
+
+  // ── Categories (Lessons + Class roots) ────────────────────────────────
+  console.log("\n📂 Seeding categories...");
+  const { classIdMap, lessonIdMap, remappedLegacyLinks } = await syncCanonicalCategoryHierarchy(db);
+  console.log(`✅ Canonical category roots ready: Lessons + Class`);
+  if (remappedLegacyLinks > 0) {
+    console.log(`  ✓ Remapped ${remappedLegacyLinks} legacy category link(s)`);
+  }
+
+  // Assign content to categories
+  console.log("\n🏷️  Assigning content to categories...");
+
+  const contentCategoryAssignments: { title: string; className: string; lessonNames: string[] }[] = [
+    { title: "Matematik 9 - Cebir Temelleri", className: "9", lessonNames: ["Matematik"] },
+    { title: "Fizik 10 - Hareket ve Kuvvet", className: "10", lessonNames: ["Fizik"] },
+    { title: "İngilizce 11 - İşletme Dili", className: "11", lessonNames: ["İngilizce"] },
+  ];
+
+  for (const assignment of contentCategoryAssignments) {
+    const existingContent = await db.query.content.findFirst({
+      where: (c, { eq }) => eq(c.title, assignment.title),
+    });
+    if (!existingContent) continue;
+
+    const classId = classIdMap.get(assignment.className);
+    const lessonIds = assignment.lessonNames
+      .map((lessonName) => lessonIdMap.get(lessonName))
+      .filter((lessonId): lessonId is string => Boolean(lessonId));
+    if (!classId || lessonIds.length === 0) continue;
+
+    // Clear existing assignments and assign class + lesson(s)
+    await db.delete(schema.contentCategories).where(
+      eq(schema.contentCategories.contentId, existingContent.id)
+    );
+    await db.insert(schema.contentCategories).values([
+      { contentId: existingContent.id, categoryId: classId },
+      ...lessonIds.map((lessonId) => ({
+        contentId: existingContent.id,
+        categoryId: lessonId,
+      })),
+    ]).onConflictDoNothing();
+    console.log(`  ✓ ${assignment.title} → Class/${assignment.className} + Lessons/${assignment.lessonNames.join(", ")}`);
   }
 
   // Create sample questions for testing

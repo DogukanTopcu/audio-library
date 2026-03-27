@@ -149,6 +149,7 @@ const InlineAudioPlayer = forwardRef<AudioPlayerHandle, InlineAudioPlayerProps>(
     const [isPlaying, setIsPlaying] = useState(false);
     const [progress, setProgress] = useState(0);
     const [duration, setDuration] = useState(0);
+    const loadPromiseRef = useRef<Promise<void> | null>(null);
 
     if (autoPlay)
       autoLoad = true;
@@ -185,16 +186,27 @@ const InlineAudioPlayer = forwardRef<AudioPlayerHandle, InlineAudioPlayerProps>(
 
     const load = useCallback(async () => {
       if (url) return;
-      setIsLoading(true);
-      try {
-        const { data } = await api.get(`/player/token?audioRecordId=${audioRecordId}`);
-        const result = data.data || data;
-        setUrl(result.url);
-      } catch {
-        toast.error("Ses yuklenemedi.");
-      } finally {
-        setIsLoading(false);
+      if (loadPromiseRef.current) {
+        await loadPromiseRef.current;
+        return;
       }
+
+      const request = (async () => {
+        setIsLoading(true);
+        try {
+          const { data } = await api.get(`/player/token?audioRecordId=${audioRecordId}`);
+          const result = data.data || data;
+          setUrl(result.url);
+        } catch {
+          toast.error("Ses yuklenemedi.");
+        } finally {
+          setIsLoading(false);
+          loadPromiseRef.current = null;
+        }
+      })();
+
+      loadPromiseRef.current = request;
+      await request;
     }, [audioRecordId, url]);
 
     useEffect(() => {
@@ -277,6 +289,7 @@ const InlineAudioPlayer = forwardRef<AudioPlayerHandle, InlineAudioPlayerProps>(
       <div className="flex items-center gap-2">
         {url && (
           <audio
+            key={audioRecordId}
             ref={audioRef}
             src={url}
             onTimeUpdate={() => audioRef.current && setProgress(audioRef.current.currentTime)}

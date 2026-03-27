@@ -75,6 +75,9 @@ export default function ChapterPlayerPage() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const loadedAudioIdRef = useRef<string | null>(null);
+  const loadingAudioIdRef = useRef<string | null>(null);
+  const latestLoadRequestRef = useRef(0);
 
   /* ---- Fetch chapter audio list ---- */
   useEffect(() => {
@@ -97,14 +100,38 @@ export default function ChapterPlayerPage() {
   const loadAudio = useCallback(
     async (index: number) => {
       if (!data || index < 0 || index >= data.audioRecords.length) return;
+      const audio = data.audioRecords[index]!;
+
+      if (loadingAudioIdRef.current === audio.id) {
+        return;
+      }
+
+      if (loadedAudioIdRef.current === audio.id && activeIndex === index && signedUrl) {
+        return;
+      }
+
+      latestLoadRequestRef.current += 1;
+      const requestId = latestLoadRequestRef.current;
+      loadingAudioIdRef.current = audio.id;
       setIsAudioLoading(true);
       setIsPlaying(false);
-      const audio = data.audioRecords[index]!;
+
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+
       try {
         const { data: res } = await api.get(`/player/token?audioRecordId=${audio.id}`);
         const result = res.data || res;
+        if (requestId !== latestLoadRequestRef.current) {
+          return;
+        }
+
         setSignedUrl(result.url);
         setActiveIndex(index);
+        loadedAudioIdRef.current = audio.id;
+        setCurrentTime(0);
+        setDuration(0);
 
         // Resume from saved position
         if (audio.progress && !audio.progress.isCompleted) {
@@ -117,10 +144,13 @@ export default function ChapterPlayerPage() {
       } catch {
         toast.error("Ses kaydi yuklenirken hata olustu.");
       } finally {
+        if (loadingAudioIdRef.current === audio.id) {
+          loadingAudioIdRef.current = null;
+        }
         setIsAudioLoading(false);
       }
     },
-    [data]
+    [activeIndex, data, signedUrl]
   );
 
   // Load first audio on data
@@ -409,6 +439,7 @@ export default function ChapterPlayerPage() {
           {/* Hidden audio */}
           {signedUrl && (
             <audio
+              key={activeAudio.id}
               ref={audioRef}
               src={signedUrl}
               onTimeUpdate={handleTimeUpdate}

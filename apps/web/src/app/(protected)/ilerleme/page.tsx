@@ -97,21 +97,33 @@ function InlineAudioPlayer({
   const [url, setUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const loadPromiseRef = useRef<Promise<void> | null>(null);
 
   const load = useCallback(async () => {
     if (url) return;
-    setIsLoading(true);
-    try {
-      const { data } = await api.get(
-        `/player/token?audioRecordId=${audioRecordId}`
-      );
-      const result = data.data || data;
-      setUrl(result.url);
-    } catch {
-      toast.error("Ses yuklenemedi.");
-    } finally {
-      setIsLoading(false);
+    if (loadPromiseRef.current) {
+      await loadPromiseRef.current;
+      return;
     }
+
+    const request = (async () => {
+      setIsLoading(true);
+      try {
+        const { data } = await api.get(
+          `/player/token?audioRecordId=${audioRecordId}`
+        );
+        const result = data.data || data;
+        setUrl(result.url);
+      } catch {
+        toast.error("Ses yuklenemedi.");
+      } finally {
+        setIsLoading(false);
+        loadPromiseRef.current = null;
+      }
+    })();
+
+    loadPromiseRef.current = request;
+    await request;
   }, [audioRecordId, url]);
 
   const togglePlay = async () => {
@@ -138,6 +150,7 @@ function InlineAudioPlayer({
     <div className="inline-flex items-center">
       {url && (
         <audio
+          key={audioRecordId}
           ref={audioRef}
           src={url}
           onEnded={() => setIsPlaying(false)}
@@ -145,7 +158,14 @@ function InlineAudioPlayer({
         />
       )}
       <button
-        onClick={togglePlay}
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          void togglePlay();
+        }}
+        onKeyDown={(e) => {
+          e.stopPropagation();
+        }}
         disabled={isLoading}
         aria-label={isPlaying ? `${label} duraklat` : `${label} oynat`}
         className="w-[32px] h-[32px] rounded-full bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center flex-shrink-0 disabled:opacity-50 transition-colors"
@@ -274,10 +294,20 @@ function RetryQuestionCard({
                 else if (isSelected) borderColor = "border-primary";
 
                 return (
-                  <button
+                  <div
                     key={choice.id}
                     onClick={() => !isAnswered && setSelectedChoice(choice.choiceIndex)}
-                    disabled={isAnswered}
+                    onKeyDown={(e) => {
+                      if (isAnswered) return;
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setSelectedChoice(choice.choiceIndex);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={isAnswered ? -1 : 0}
+                    aria-disabled={isAnswered}
+                    aria-pressed={isSelected}
                     className={`w-full flex items-center gap-3 px-3 py-3 border rounded-lg transition-colors text-left min-h-[44px] ${borderColor} ${
                       isAnswered
                         ? "cursor-default"
@@ -304,7 +334,7 @@ function RetryQuestionCard({
                         aria-hidden="true"
                       />
                     )}
-                  </button>
+                  </div>
                 );
               })}
           </div>

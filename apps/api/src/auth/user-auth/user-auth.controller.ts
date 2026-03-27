@@ -27,6 +27,16 @@ export class UserAuthController {
   }
 
   @Public()
+  @Get('login')
+  getLoginHelp() {
+    return {
+      message: 'Use POST /api/auth/login with email and password to sign in.',
+      method: 'POST',
+      fields: ['email', 'password'],
+    };
+  }
+
+  @Public()
   @Post('login')
   login(@Body() dto: LoginDto, @Req() req: Request) {
     const deviceInfo = req.headers['user-agent'] || 'unknown';

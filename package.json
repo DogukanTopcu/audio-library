@@ -10,6 +10,7 @@
     "db:generate": "turbo db:generate",
     "db:migrate": "turbo db:migrate",
     "db:seed": "turbo db:seed",
+    "db:sync-categories": "pnpm --filter @repo/db db:sync-categories",
     "db:studio": "turbo db:studio"
   },
   "devDependencies": {

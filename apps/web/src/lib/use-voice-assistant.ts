@@ -56,6 +56,7 @@ export function useVoiceAssistant({
   const streamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const isUploadingRef = useRef(false);
 
   // Keep commands ref fresh
   useEffect(() => {
@@ -78,10 +79,13 @@ export function useVoiceAssistant({
 
   /** Send accumulated audio to the backend for recognition */
   const sendAudioForRecognition = useCallback(async (blob: Blob) => {
-    if (blob.size < 1000) return;           // skip near-empty clips
+    if (blob.size < 1000 || isUploadingRef.current) return; // skip near-empty or overlapping clips
+
+    isUploadingRef.current = true;
     try {
       const formData = new FormData();
-      formData.append("audio", blob, "voice.webm");
+      const extension = getAudioExtension(blob.type);
+      formData.append("audio", blob, `voice.${extension}`);
 
       const { data } = await api.post("/speech/recognize", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -105,7 +109,25 @@ export function useVoiceAssistant({
         }
       }
     } catch (err) {
-      console.warn("[VoiceAssistant] recognition request failed:", err);
+      const serverMessage =
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        typeof err.response === "object" &&
+        err.response !== null &&
+        "data" in err.response &&
+        typeof err.response.data === "object" &&
+        err.response.data !== null &&
+        "message" in err.response.data
+          ? String(err.response.data.message)
+          : null;
+
+      console.warn(
+        "[VoiceAssistant] recognition request failed:",
+        serverMessage ?? err,
+      );
+    } finally {
+      isUploadingRef.current = false;
     }
   }, []);
 
@@ -257,5 +279,12 @@ function normalizeTurkish(text: string): string {
     .replace(/ğ/g, "g")
     .replace(/ı/g, "i")
     .trim();
+}
+
+function getAudioExtension(mimeType: string): string {
+  if (mimeType.includes("ogg")) return "ogg";
+  if (mimeType.includes("wav")) return "wav";
+  if (mimeType.includes("flac")) return "flac";
+  return "webm";
 }
 

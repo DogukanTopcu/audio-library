@@ -4,7 +4,7 @@ import { GCP_STORAGE } from '../gcp/gcp.module.js';
 import { ConfigService } from '@nestjs/config';
 import { Storage } from '@google-cloud/storage';
 import * as schema from '../../../../packages/db/src/schema/index.js';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 type DB = NodePgDatabase<typeof schema>;
@@ -28,6 +28,15 @@ export class PlayerService {
 
     if (!record) throw new NotFoundException('Audio record not found');
 
+    const file = this.storage.bucket(this.bucketName).file(record.bucketKey);
+    const [exists] = await file.exists();
+
+    if (!exists) {
+      throw new NotFoundException(
+        `Audio file is missing from storage for record ${audioRecordId}`,
+      );
+    }
+
     // Log activity
     await this.db.insert(schema.userActivityLogs).values({
       userId,
@@ -36,10 +45,7 @@ export class PlayerService {
     });
 
     // Generate signed URL
-    const [url] = await this.storage
-      .bucket(this.bucketName)
-      .file(record.bucketKey)
-      .getSignedUrl({
+    const [url] = await file.getSignedUrl({
         action: 'read',
         expires: Date.now() + 30 * 60 * 1000,
       });
@@ -251,8 +257,8 @@ export class PlayerService {
           durationSeconds: audio.durationSeconds,
           orderIndex: audio.orderIndex,
           bucketKey: audio.bucketKey,
-          previousId: idx > 0 ? audioRecords[idx - 1]!.id : null,
-          nextId: idx < audioRecords.length - 1 ? audioRecords[idx + 1]!.id : null,
+          previousId: idx > 0 ? audioRecords[idx - 1].id : null,
+          nextId: idx < audioRecords.length - 1 ? audioRecords[idx + 1].id : null,
           progress: progress
             ? {
                 positionSeconds: progress.positionSeconds,

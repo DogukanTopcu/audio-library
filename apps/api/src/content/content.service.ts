@@ -1,13 +1,35 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { eq, and, like, sql, asc, desc, count, ilike } from 'drizzle-orm';
+import { eq, and, sql, asc, desc, count, inArray, type SQL } from 'drizzle-orm';
 import { DRIZZLE } from '../drizzle/drizzle.module.js';
 import * as schema from '../../../../packages/db/src/schema/index.js';
 import { content, contentCategories, chapters } from '../../../../packages/db/src/schema/index.js';
 import { CreateContentDto } from './dto/create-content.dto.js';
 import { UpdateContentDto } from './dto/update-content.dto.js';
+import {
+  buildCategoryMaps,
+  collectCategorySubtreeIds,
+  validateSingleCategoryPerRoot,
+} from './category-utils.js';
 
 type DB = NodePgDatabase<typeof schema>;
+type CategoryRecord = typeof schema.categories.$inferSelect;
+type ContentRecord = typeof content.$inferSelect;
+type ContentType = ContentRecord['type'];
+type ChapterRecord = typeof chapters.$inferSelect;
+type ChapterTreeNode = ChapterRecord & { children: ChapterTreeNode[] };
+
+const contentSortColumns = {
+  createdAt: content.createdAt,
+  updatedAt: content.updatedAt,
+  title: content.title,
+  type: content.type,
+  isActive: content.isActive,
+} as const;
+
+function isContentType(value: string): value is ContentType {
+  return ['TEXTBOOK', 'NOVEL', 'PRACTICE_TEST', 'QUESTION_BANK', 'OTHER'].includes(value);
+}
 
 @Injectable()
 export class ContentService {
@@ -21,16 +43,68 @@ export class ContentService {
     const limit = pagination.limit ?? 20;
     const offset = (page - 1) * limit;
 
-    const conditions: any[] = [];
+    const conditions: SQL[] = [];
 
-    if (filters?.type) {
-      conditions.push(eq(content.type, filters.type as any));
+    if (filters?.type && isContentType(filters.type)) {
+      conditions.push(eq(content.type, filters.type));
     }
     if (filters?.isActive !== undefined) {
       conditions.push(eq(content.isActive, filters.isActive));
     }
-    if (filters?.search) {
-      conditions.push(ilike(content.title, `%${filters.search}%`));
+    const searchTerm = filters?.search?.trim();
+    const requestedCategoryIds = filters?.categoryId
+      ?.split(',')
+      .map((s) => s.trim())
+      .filter(Boolean) ?? [];
+    const shouldLoadCategories = Boolean(searchTerm || requestedCategoryIds.length > 0);
+    const allCategories: CategoryRecord[] = shouldLoadCategories
+      ? await this.db.select().from(schema.categories)
+      : [];
+    const { categoryMap: categoryLookup, childrenByParent } = buildCategoryMaps(allCategories);
+
+    if (searchTerm) {
+      const normalizedSearchTerm = searchTerm.toLocaleLowerCase('tr-TR');
+      const matchedCategoryIds = Array.from(
+        new Set(
+          allCategories
+            .filter((item) => item.name.toLocaleLowerCase('tr-TR').includes(normalizedSearchTerm))
+            .flatMap((item) => collectCategorySubtreeIds(item.id, childrenByParent)),
+        ),
+      );
+
+      if (matchedCategoryIds.length === 0) {
+        return {
+          data: [],
+          meta: {
+            total: 0,
+            page,
+            limit,
+            totalPages: 0,
+          },
+        };
+      }
+
+      const contentIdsMatchingCategoryName = this.db
+        .select({ contentId: contentCategories.contentId })
+        .from(contentCategories)
+        .where(inArray(contentCategories.categoryId, matchedCategoryIds))
+        .groupBy(contentCategories.contentId);
+
+      conditions.push(inArray(content.id, contentIdsMatchingCategoryName));
+    }
+    if (requestedCategoryIds.length > 0) {
+      const validatedCategoryIds = validateSingleCategoryPerRoot(requestedCategoryIds, categoryLookup);
+
+      for (const categoryId of validatedCategoryIds) {
+        const subtreeIds = collectCategorySubtreeIds(categoryId, childrenByParent);
+        const contentIdsInCategoryTree = this.db
+          .select({ contentId: contentCategories.contentId })
+          .from(contentCategories)
+          .where(inArray(contentCategories.categoryId, subtreeIds))
+          .groupBy(contentCategories.contentId)
+          .having(sql`count(distinct ${contentCategories.categoryId}) >= 1`);
+        conditions.push(inArray(content.id, contentIdsInCategoryTree));
+      }
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -43,7 +117,11 @@ export class ContentService {
     const total = totalResult.count;
 
     const orderFn = pagination.sortOrder === 'asc' ? asc : desc;
-    const sortColumn = (content as any)[pagination.sortBy ?? 'createdAt'] ?? content.createdAt;
+    const sortKey =
+      pagination.sortBy && pagination.sortBy in contentSortColumns
+        ? (pagination.sortBy as keyof typeof contentSortColumns)
+        : 'createdAt';
+    const sortColumn = contentSortColumns[sortKey];
 
     const data = await this.db.query.content.findMany({
       where: whereClause,
@@ -52,8 +130,31 @@ export class ContentService {
       offset,
     });
 
+    const contentIds = data.map((item) => item.id);
+    const categoryLinks = contentIds.length > 0
+      ? await this.db
+          .select({
+            contentId: contentCategories.contentId,
+            categoryId: contentCategories.categoryId,
+          })
+          .from(contentCategories)
+          .where(inArray(contentCategories.contentId, contentIds))
+      : [];
+
+    const categoryMap = new Map<string, string[]>();
+    for (const link of categoryLinks) {
+      const existing = categoryMap.get(link.contentId) ?? [];
+      existing.push(link.categoryId);
+      categoryMap.set(link.contentId, existing);
+    }
+
+    const enrichedData = data.map((item) => ({
+      ...item,
+      categoryIds: categoryMap.get(item.id) ?? [],
+    }));
+
     return {
-      data,
+      data: enrichedData,
       meta: {
         total,
         page,
@@ -141,27 +242,31 @@ export class ContentService {
   async assignCategories(contentId: string, categoryIds: string[]) {
     await this.findOne(contentId);
 
+    const allCategories: CategoryRecord[] = await this.db.select().from(schema.categories);
+    const { categoryMap: categoryLookup } = buildCategoryMaps(allCategories);
+    const validatedCategoryIds = validateSingleCategoryPerRoot(categoryIds, categoryLookup);
+
     // Delete existing associations
     await this.db
       .delete(contentCategories)
       .where(eq(contentCategories.contentId, contentId));
 
     // Insert new associations
-    if (categoryIds.length > 0) {
+    if (validatedCategoryIds.length > 0) {
       await this.db.insert(contentCategories).values(
-        categoryIds.map((categoryId) => ({
+        validatedCategoryIds.map((categoryId) => ({
           contentId,
           categoryId,
         })),
       );
     }
 
-    return { contentId, categoryIds };
+    return { contentId, categoryIds: validatedCategoryIds };
   }
 
-  private buildChapterTree(items: any[]): any[] {
-    const map = new Map<string, any>();
-    const roots: any[] = [];
+  private buildChapterTree(items: ChapterRecord[]): ChapterTreeNode[] {
+    const map = new Map<string, ChapterTreeNode>();
+    const roots: ChapterTreeNode[] = [];
 
     for (const item of items) {
       map.set(item.id, { ...item, children: [] });

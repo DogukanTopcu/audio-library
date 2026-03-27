@@ -12,6 +12,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/migrate.ts",
     "db:seed": "tsx src/seed.ts",
+    "db:sync-categories": "tsx src/sync-category-hierarchy.ts",
     "db:studio": "drizzle-kit studio"
   },
   "keywords": [],
